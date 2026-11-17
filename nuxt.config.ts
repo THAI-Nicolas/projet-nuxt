@@ -7,6 +7,11 @@ export default defineNuxtConfig({
     typeCheck: true,
     strict: true,
   },
+  runtimeConfig: {
+    public: {
+      apiUrl: "",
+    },
+  },
   devtools: { enabled: true },
   css: ["~/assets/css/main.css"],
   vite: {
