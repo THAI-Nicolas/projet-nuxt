@@ -1,10 +1,5 @@
 <script setup lang="ts">
-interface Health {
-  status: string;
-  time: string;
-  uptimeSeconds: number;
-  db: string;
-}
+import type { Health } from "~/types/api";
 
 const api = useApi();
 // useAsyncData : charge les données côté serveur ET client, et expose l'état de la requête
