@@ -1,19 +1,41 @@
 <script setup lang="ts">
+import type { AuthFormField, FormSubmitEvent } from "@nuxt/ui";
+
 definePageMeta({ public: true });
 
 const { login } = useAuth();
 
-const form = reactive({ login: "", password: "" });
+// UAuthForm génère les champs (label relié, œil sur le mot de passe) depuis ce tableau
+const fields: AuthFormField[] = [
+  {
+    name: "login",
+    type: "text",
+    label: "Identifiant ou e-mail",
+    autocomplete: "username",
+    required: true,
+  },
+  {
+    name: "password",
+    type: "password",
+    label: "Mot de passe",
+    autocomplete: "current-password",
+    required: true,
+  },
+];
+
 const errorMessage = ref("");
 const pending = ref(false);
 
-async function onSubmit() {
+async function onSubmit(
+  event: FormSubmitEvent<{ login: string; password: string }>,
+) {
   pending.value = true;
   errorMessage.value = "";
   try {
-    await login(form.login, form.password);
+    await login(event.data.login, event.data.password);
     await navigateTo("/drops");
   } catch (e) {
+    // 401 invalid_credentials : message dans le formulaire, pas de déconnexion
     errorMessage.value =
       getApiError(e)?.message ?? "Connexion impossible, réessaie.";
   } finally {
@@ -23,43 +45,28 @@ async function onSubmit() {
 </script>
 
 <template>
-  <main class="p-4">
-    <h1 class="text-xl font-bold">Connexion</h1>
-
-    <form class="mt-4 space-y-3" @submit.prevent="onSubmit">
-      <div>
-        <label for="login" class="block text-sm">Identifiant ou e-mail</label>
-        <input
-          id="login"
-          v-model="form.login"
-          autocomplete="username"
-          required
-          class="w-full rounded border border-line bg-surface px-3 py-2"
-        />
-      </div>
-      <div>
-        <label for="password" class="block text-sm">Mot de passe</label>
-        <input
-          id="password"
-          v-model="form.password"
-          type="password"
-          autocomplete="current-password"
-          required
-          class="w-full rounded border border-line bg-surface px-3 py-2"
-        />
-      </div>
-
-      <p v-if="errorMessage" role="alert" class="text-danger">
-        {{ errorMessage }}
-      </p>
-
-      <button
-        type="submit"
-        :disabled="pending"
-        class="rounded-full bg-accent px-4 py-2 font-bold text-bg disabled:opacity-50"
+  <main class="flex justify-center px-4 py-12 sm:py-20">
+    <UCard class="w-full max-w-sm">
+      <UAuthForm
+        :fields="fields"
+        icon="i-lucide-droplet"
+        title="Connexion"
+        description="Content de te revoir sur Droppy."
+        :submit="{ label: 'Se connecter' }"
+        :loading="pending"
+        @submit="onSubmit"
       >
-        {{ pending ? "Connexion…" : "Se connecter" }}
-      </button>
-    </form>
+        <template #validation>
+          <UAlert
+            v-if="errorMessage"
+            role="alert"
+            color="error"
+            variant="subtle"
+            icon="i-lucide-circle-alert"
+            :title="errorMessage"
+          />
+        </template>
+      </UAuthForm>
+    </UCard>
   </main>
 </template>
