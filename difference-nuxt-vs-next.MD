@@ -76,3 +76,17 @@
 
 - Le principe est le même dans les deux frameworks : l'URL est la source de vérité. Dans Nuxt, `useAsyncData(..., { watch: [q] })` relance la requête quand `q` change.
 - `route.query.q` peut valoir `string`, `null` ou un tableau : on vérifie avec `typeof`, pas avec `as string`.
+
+## 9. Filtre par catégorie (URL + cache)
+
+| Next (React)                                             | Nuxt (Vue)                                                              |
+| -------------------------------------------------------- | ----------------------------------------------------------------------- |
+| Composant serveur `'use cache'` qui charge `/categories` | `useAsyncData('categories', ..., { getCachedData })` dans le composant  |
+| `categories.map(c => <Link key={c.id} ...>)`             | `<li v-for="c in categories" :key="c.id">`                              |
+| `<Link href="?category=photo">`                          | `<NuxtLink :to="{ query: { ...route.query, category: c.id } }">`        |
+| `searchParams.category`                                  | `useRoute().query.category`                                             |
+
+- Différence de cache :
+  - `'use cache'` met la donnée en cache **sur le serveur**, partagée par tous les visiteurs.
+  - `getCachedData` réutilise la donnée déjà chargée **dans le navigateur** de l'utilisateur, ce qui évite de refaire la requête.
+- Un filtre écrit dans l'URL est une navigation : on utilise des liens (`<Link>` / `<NuxtLink>`), pas des boutons.
