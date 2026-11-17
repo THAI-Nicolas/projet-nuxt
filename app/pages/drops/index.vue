@@ -1,10 +1,32 @@
 <script setup lang="ts">
 import type { DropPage } from "~/types/api";
 
+const route = useRoute();
+const router = useRouter();
 const api = useApi();
 
-const { data, error, status, refresh } = await useAsyncData("drops", () =>
-  api<DropPage>("/drops"),
+const q = computed(() =>
+  typeof route.query.q === "string" ? route.query.q : "",
+);
+
+const search = ref(q.value);
+
+watchDebounced(
+  search,
+  (value) => {
+    router.replace({ query: { ...route.query, q: value.trim() || undefined } });
+  },
+  { debounce: 300 },
+);
+
+watch(q, (value) => {
+  if (search.value.trim() !== value) search.value = value;
+});
+
+const { data, error, status, refresh } = await useAsyncData(
+  "drops",
+  () => api<DropPage>("/drops", { query: { q: q.value || undefined } }),
+  { watch: [q] },
 );
 </script>
 
@@ -19,14 +41,19 @@ const { data, error, status, refresh } = await useAsyncData("drops", () =>
           variant="subtle"
           size="lg"
           class="rounded-full"
+          aria-live="polite"
         >
           {{ data.total }} {{ data.total > 1 ? "drops" : "drop" }}
         </UBadge>
       </div>
-      <!-- À venir : barre de recherche + filtres par catégorie (badges), espacés par space-y-4 -->
+      <DropSearch v-model="search" />
     </header>
 
-    <p v-if="status === 'pending'" role="status" class="p-4 text-muted">
+    <p
+      v-if="status === 'pending' && !data"
+      role="status"
+      class="p-4 text-muted"
+    >
       Chargement…
     </p>
     <div v-else-if="error" role="alert" class="p-4">
@@ -35,6 +62,13 @@ const { data, error, status, refresh } = await useAsyncData("drops", () =>
         Réessayer
       </button>
     </div>
+    <p v-else-if="data && data.items.length === 0" class="p-4 text-muted">
+      {{
+        q
+          ? `Aucun drop ne correspond à « ${q} ».`
+          : "Aucun drop pour l'instant."
+      }}
+    </p>
     <ul v-else-if="data">
       <li v-for="drop in data.items" :key="drop.id">
         <DropCard :drop="drop" />
