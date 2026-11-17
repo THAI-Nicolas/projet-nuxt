@@ -62,7 +62,7 @@ const { data, error, status, refresh } = await useAsyncData(
           {{ data.total }} {{ data.total > 1 ? "drops" : "drop" }}
         </UBadge>
       </div>
-      <DropSearch v-model="search" />
+      <DropSearch v-model="search" :loading="status === 'pending'" />
       <DropCategoryFilter
         v-if="categories"
         v-model="category"
@@ -73,8 +73,9 @@ const { data, error, status, refresh } = await useAsyncData(
     <p
       v-if="status === 'pending' && !data"
       role="status"
-      class="p-4 text-muted"
+      class="flex items-center gap-2 p-4 text-muted"
     >
+      <UIcon name="i-lucide-loader-circle" class="size-5 animate-spin" />
       Chargement…
     </p>
     <div v-else-if="error" role="alert" class="p-4">
@@ -90,7 +91,13 @@ const { data, error, status, refresh } = await useAsyncData(
           : "Aucun drop pour l'instant."
       }}
     </p>
-    <ul v-else-if="data">
+    <!-- Pendant une recherche, l'ancienne liste reste mais s'estompe -->
+    <ul
+      v-else-if="data"
+      :aria-busy="status === 'pending'"
+      class="transition-opacity"
+      :class="{ 'opacity-50': status === 'pending' }"
+    >
       <li v-for="drop in data.items" :key="drop.id">
         <DropCard :drop="drop" />
       </li>
