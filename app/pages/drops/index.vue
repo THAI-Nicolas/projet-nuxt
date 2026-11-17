@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { DropPage } from "~/types/api";
+import type { Category, DropPage } from "~/types/api";
 
 const route = useRoute();
 const router = useRouter();
@@ -23,10 +23,26 @@ watch(q, (value) => {
   if (search.value.trim() !== value) search.value = value;
 });
 
+// Chargées avant les drops : le filtre en dépend dès le premier rendu (ensuite servies depuis le cache)
+const { data: categories } = await useAsyncData("categories", () =>
+  api<Category[]>("/categories"),
+);
+
+// URL ⇄ filtre. get : ?category n'est gardé que s'il existe vraiment (sinon 422). set : écrit dans l'URL.
+const category = computed({
+  get: () => categories.value?.find((c) => c.id === route.query.category)?.id,
+  set: (value) => {
+    router.replace({ query: { ...route.query, category: value } });
+  },
+});
+
 const { data, error, status, refresh } = await useAsyncData(
   "drops",
-  () => api<DropPage>("/drops", { query: { q: q.value || undefined } }),
-  { watch: [q] },
+  () =>
+    api<DropPage>("/drops", {
+      query: { q: q.value || undefined, category: category.value },
+    }),
+  { watch: [q, category] },
 );
 </script>
 
@@ -47,6 +63,11 @@ const { data, error, status, refresh } = await useAsyncData(
         </UBadge>
       </div>
       <DropSearch v-model="search" />
+      <DropCategoryFilter
+        v-if="categories"
+        v-model="category"
+        :categories="categories"
+      />
     </header>
 
     <p
@@ -64,8 +85,8 @@ const { data, error, status, refresh } = await useAsyncData(
     </div>
     <p v-else-if="data && data.items.length === 0" class="p-4 text-muted">
       {{
-        q
-          ? `Aucun drop ne correspond à « ${q} ».`
+        q || category
+          ? "Aucun drop ne correspond à ta recherche."
           : "Aucun drop pour l'instant."
       }}
     </p>
