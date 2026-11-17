@@ -20,7 +20,6 @@ const { data, error, status, refresh } = await useAsyncData("drops", () =>
         Réessayer
       </button>
     </div>
-    <p v-else-if="error">Impossible de charger les drops.</p>
     <ul v-else-if="data">
       <li v-for="drop in data.items" :key="drop.id">
         <DropCard :drop="drop" />
