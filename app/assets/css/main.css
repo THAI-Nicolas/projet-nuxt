@@ -1,6 +1,10 @@
 @import "tailwindcss";
+@import "@nuxt/ui";
 
 @theme {
+  /* Chargée automatiquement par @nuxt/fonts (inclus dans Nuxt UI) */
+  --font-sans: "Inter", sans-serif;
+
   --color-bg: #000000;
   --color-surface: #16181c;
   --color-line: #2f3336;
@@ -8,6 +12,27 @@
   --color-muted: #8b98a5;
   --color-accent: #7b71ff;
   --color-danger: #f4212e;
+}
+
+/* Thème sombre unique : remplace les valeurs claires de Nuxt UI.
+   Les composants Nuxt UI lisent nos tokens : une seule source de vérité. */
+:root {
+  --ui-primary: var(--color-accent);
+  --ui-bg: var(--color-bg);
+  --ui-bg-muted: var(--color-surface);
+  --ui-bg-elevated: var(--color-surface);
+  --ui-bg-accented: var(--color-line);
+  --ui-bg-inverted: var(--color-fg);
+  --ui-border: var(--color-line);
+  --ui-border-muted: var(--color-line);
+  --ui-border-accented: var(--color-line);
+  --ui-border-inverted: var(--color-fg);
+  --ui-text-dimmed: var(--color-muted);
+  --ui-text-muted: var(--color-muted);
+  --ui-text-toned: var(--color-fg);
+  --ui-text: var(--color-fg);
+  --ui-text-highlighted: #ffffff;
+  --ui-text-inverted: var(--color-bg);
 }
 
 @layer base {

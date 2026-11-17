@@ -1,8 +1,7 @@
-import tailwindcss from "@tailwindcss/vite";
-
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
-  modules: ["@vueuse/nuxt/module"],
+  // Nuxt UI branche lui-même Tailwind v4 (@tailwindcss/vite)
+  modules: ["@vueuse/nuxt/module", "@nuxt/ui"],
   compatibilityDate: "2025-07-15",
   typescript: {
     typeCheck: true,
@@ -15,7 +14,6 @@ export default defineNuxtConfig({
   },
   devtools: { enabled: true },
   css: ["~/assets/css/main.css"],
-  vite: {
-    plugins: [tailwindcss()],
-  },
+  // App uniquement sombre : pas de color-mode (son localStorage peut forcer le clair), tokens posés dans main.css
+  ui: { colorMode: false },
 });
