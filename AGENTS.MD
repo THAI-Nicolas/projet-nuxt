@@ -12,12 +12,12 @@ on ne développe que le client, déployé sur Netlify. Ce fichier évolue avec l
 - Tailwind CSS v4 via `@tailwindcss/vite`. Config dans `app/assets/css/main.css` (`@theme`), pas de `tailwind.config.js`.
 - Carte : `@nuxtjs/leaflet` (pas `nuxt-leaflet`, obsolète). Toujours dans `<ClientOnly>`. Zone : Montbéliard.
 - Temps réel : prévu, choix technique non arrêté. L'API n'expose aucun WebSocket. N'implémente rien sans validation.
-- `server/` : pas de logique métier, l'API est la seule source de vérité.
+- `server/` : uniquement le relais d'authentification (BFF) décrit plus bas. Pas de logique métier, l'API est la seule source de vérité.
 
 ## Structure
 
-`app/pages` (vues), `app/components` (composants isolés), `app/composables` (logique), `app/middleware` (guards).
-Un seul client HTTP : `app/composables/useApi.ts`. Aucun `fetch` dispersé.
+`app/pages` (vues), `app/components` (composants isolés), `app/composables` (logique), `app/middleware` (guards), `server/` (relais d'auth).
+Un seul client HTTP côté app : `app/composables/useApi.ts` (base `/api`). Aucun `fetch` dispersé.
 
 ## Qualité du code
 
@@ -31,10 +31,16 @@ Un seul client HTTP : `app/composables/useApi.ts`. Aucun `fetch` dispersé.
 
 ## Authentification
 
-- `Authorization: Bearer <token>`. L'API ne pose aucun cookie.
-- Token stocké via `useCookie` (`sameSite: 'strict'`, `secure`), expiration calée sur `expiresAt`.
-- Middleware de route sur toutes les pages privées.
-- 401 `invalid_token` / `token_expired` / `token_revoked` : purge le token, redirige vers le login si la page est privée.
+- Objectif : le token n'est **jamais** lisible par le JavaScript du navigateur (protection contre le vol par XSS).
+- Le navigateur appelle `/api/*` (serveur Nuxt), jamais l'API Drops directement. Le serveur Nuxt ajoute `Authorization: Bearer <token>`.
+  - `server/api/auth/login.post.ts` : appelle `POST /auth/login`, pose le cookie, renvoie l'utilisateur sans le token.
+  - `server/api/auth/logout.post.ts` : révoque le token côté API, supprime le cookie.
+  - `server/api/[...path].ts` : relais vers l'API pour tout le reste ; `/admin/*` bloqué.
+- Cookie `session` posé par le serveur : `httpOnly`, `secure` (hors dev), `sameSite: 'lax'`, `path: '/'`, expiration = `expiresAt`.
+- `apiUrl` est une clé **privée** de `runtimeConfig` (`NUXT_API_URL`), lue seulement dans `server/`.
+- Côté client, l'utilisateur connecté vit dans `useUser()` (`useState`), rempli via `GET /api/auth/me` par le middleware global.
+- Toutes les pages sont privées (`middleware/auth.global.ts`), sauf celles qui déclarent `definePageMeta({ public: true })`.
+- 401 `unauthorized` / `invalid_token` / `token_expired` / `token_revoked` : purge la session, redirige vers le login si la page est privée.
 - 401 `invalid_credentials` : erreur affichée dans le formulaire de connexion, pas de déconnexion.
 
 ## Contrat API Drops
@@ -63,7 +69,7 @@ DELETE /comments/{id}        token    (auteur)
 POST   /drops/{id}/report    token    { reason: spam|offensive|personal_info|other, details? }
 ```
 
-`token?` = facultatif (alimente `likedByMe`, `isMine`). Les routes `/admin/*` et `X-Admin-Key` sont interdites côté client.
+`token?` = facultatif (alimente `likedByMe`, `isMine`). **Depuis le 17/11/2026, toutes les routes sauf `GET /health` exigent un token** (sinon 401 `unauthorized`). Les routes `/admin/*` et `X-Admin-Key` sont interdites côté client.
 
 Pièges :
 
@@ -89,7 +95,7 @@ Format unique : `{ error: { status, code, message, fields, requestId, simulated 
 
 - `?delay=2000` pour les états de chargement, `?fail=422|500|…` pour les erreurs, `POST /auth/login?ttl=15` pour l'expiration.
 - Activés uniquement en dev via une variable d'environnement, jamais en dur dans le code.
-- Comptes : `demo` / `drops2026`, et un 2ᵉ compte (`lea`, même mot de passe) pour tester le 403.
+- Comptes : `mathis` / `drops2026`, et un 2ᵉ compte (`noah`, même mot de passe) pour tester le 403. `demo` est refusé.
 
 ## Charte du matin
 

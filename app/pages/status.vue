@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import type { Health } from "~/types/api";
 
+definePageMeta({ public: true });
+
 const api = useApi();
 // useAsyncData : charge les données côté serveur ET client, et expose l'état de la requête
 const { data, error, status, refresh } = await useAsyncData("health", () =>
@@ -13,7 +15,7 @@ const { data, error, status, refresh } = await useAsyncData("health", () =>
 
     <p v-if="status === 'pending'" role="status">Vérification…</p>
     <p v-else-if="error" role="alert" class="text-red-700">
-      API indisponible (erreur {{ error.statusCode }})
+      API indisponible (erreur {{ error.status }})
     </p>
     <dl v-else-if="data" class="mt-4 grid grid-cols-2 gap-2">
       <dt>API</dt>

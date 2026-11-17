@@ -8,9 +8,7 @@ export default defineNuxtConfig({
     strict: true,
   },
   runtimeConfig: {
-    public: {
-      apiUrl: "",
-    },
+    apiUrl: "", // privé : NUXT_API_URL, lu uniquement dans server/
   },
   devtools: { enabled: true },
   css: ["~/assets/css/main.css"],
