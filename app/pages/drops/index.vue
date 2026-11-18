@@ -51,16 +51,19 @@ const { data, error, status, refresh } = await useAsyncData(
     <header class="space-y-4 border-b border-line px-4 py-6">
       <div class="flex items-center justify-between gap-4">
         <h1 class="text-2xl font-bold">Drops</h1>
-        <UBadge
-          v-if="data"
-          icon="i-lucide-droplet"
-          variant="subtle"
-          size="lg"
-          class="rounded-full"
-          aria-live="polite"
-        >
-          {{ data.total }} {{ data.total > 1 ? "drops" : "drop" }}
-        </UBadge>
+        <div class="flex items-center gap-2">
+          <UBadge
+            v-if="data"
+            icon="i-lucide-droplet"
+            variant="subtle"
+            size="lg"
+            class="rounded-full"
+            aria-live="polite"
+          >
+            {{ data.total }} {{ data.total > 1 ? "drops" : "drop" }}
+          </UBadge>
+          <UButton to="/drops/new" icon="i-lucide-plus" label="Nouveau" />
+        </div>
       </div>
       <DropSearch v-model="search" :loading="status === 'pending'" />
       <DropCategoryFilter

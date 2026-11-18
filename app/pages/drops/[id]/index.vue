@@ -61,21 +61,25 @@ useSeoMeta({ title: () => drop.value?.title ?? "Drop" });
 
     <article v-else-if="drop" class="mt-4">
       <header class="space-y-4">
-        <UUser
-          :name="drop.author.displayName"
-          :avatar="{ alt: drop.author.displayName }"
-          size="lg"
-        >
-          <template #description>
-            @{{ drop.author.username }} ·
-            <NuxtTime
-              :datetime="drop.createdAt"
-              locale="fr-FR"
-              date-style="long"
-              time-style="short"
-            />
-          </template>
-        </UUser>
+        <div class="flex flex-wrap items-start justify-between gap-3">
+          <UUser
+            :name="drop.author.displayName"
+            :avatar="{ alt: drop.author.displayName }"
+            size="lg"
+          >
+            <template #description>
+              @{{ drop.author.username }} ·
+              <NuxtTime
+                :datetime="drop.createdAt"
+                locale="fr-FR"
+                date-style="long"
+                time-style="short"
+              />
+            </template>
+          </UUser>
+          <!-- Actions réservées à l'auteur : rien n'est rendu sur le drop de quelqu'un d'autre -->
+          <DropOwnerActions v-if="drop.isMine" :drop="drop" />
+        </div>
 
         <div class="flex flex-wrap gap-2">
           <UBadge

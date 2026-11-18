@@ -1,6 +1,10 @@
-import type { components } from "./schema";
+import type { components, paths } from "./schema";
 
 type S = components["schemas"];
+
+// Corps de POST /drops (PATCH accepte les mêmes champs, tous optionnels)
+export type DropBody =
+  paths["/drops"]["post"]["requestBody"]["content"]["application/json"];
 
 export type Drop = S["Drop"];
 export type DropPage = S["DropPage"];
