@@ -12,11 +12,24 @@ export function useAuth() {
     });
   }
 
+  // Même relais serveur que le login : cookie httpOnly posé, seul l'utilisateur revient
+  async function register(body: {
+    username: string;
+    email: string;
+    password: string;
+    displayName: string;
+  }) {
+    user.value = await api<PrivateUser>("/auth/register", {
+      method: "POST",
+      body,
+    });
+  }
+
   async function logout() {
     await api("/auth/logout", { method: "POST" }).catch(() => {});
     user.value = null;
     await navigateTo("/login");
   }
 
-  return { user, login, logout };
+  return { user, login, register, logout };
 }

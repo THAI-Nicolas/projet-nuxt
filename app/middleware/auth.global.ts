@@ -13,5 +13,6 @@ export default defineNuxtRouteMiddleware(async (to) => {
   }
 
   if (!user.value && to.meta.public !== true) return navigateTo("/login");
-  if (user.value && to.path === "/login") return navigateTo("/drops");
+  if (user.value && ["/login", "/register"].includes(to.path))
+    return navigateTo("/drops");
 });

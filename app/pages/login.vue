@@ -66,6 +66,12 @@ async function onSubmit(
             :title="errorMessage"
           />
         </template>
+        <template #footer>
+          Pas encore de compte ?
+          <ULink to="/register" class="font-medium text-primary">
+            Créer un compte
+          </ULink>
+        </template>
       </UAuthForm>
     </UCard>
   </main>

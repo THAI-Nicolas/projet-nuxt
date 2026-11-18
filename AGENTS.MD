@@ -9,15 +9,31 @@ on ne développe que le client, déployé sur Netlify. Ce fichier évolue avec l
 ## Stack
 
 - Nuxt ^4.6 (Vue 3, `<script setup lang="ts">`, TypeScript strict, pas de `any`), Node 22+, npm.
-- Tailwind CSS v4 via `@tailwindcss/vite`. Config dans `app/assets/css/main.css` (`@theme`), pas de `tailwind.config.js`.
+- Nuxt UI v4 (`@nuxt/ui`) : composants `U*` en priorité avant tout composant maison. Textes Nuxt UI en français (`<UApp :locale="fr">`).
+- Tailwind CSS v4, intégré par Nuxt UI (ne pas ajouter `@tailwindcss/vite`). Config dans `app/assets/css/main.css`, pas de `tailwind.config.js`.
+  Thème sombre unique (`ui.colorMode: false`) : tokens dans `@theme`, reliés aux variables `--ui-*` de Nuxt UI sur `:root`.
+- Icônes : Lucide en local (`@iconify-json/lucide`), noms `i-lucide-*` (`UIcon`, prop `icon`). Pas de SVG copié à la main.
+- VueUse (`@vueuse/nuxt`) pour les utilitaires réactifs (`watchDebounced`, `useResizeObserver`…).
 - Carte : `@nuxtjs/leaflet` (pas `nuxt-leaflet`, obsolète). Toujours dans `<ClientOnly>`. Zone : Montbéliard.
 - Temps réel : prévu, choix technique non arrêté. L'API n'expose aucun WebSocket. N'implémente rien sans validation.
 - `server/` : uniquement le relais d'authentification (BFF) décrit plus bas. Pas de logique métier, l'API est la seule source de vérité.
 
 ## Structure
 
-`app/pages` (vues), `app/components` (composants isolés), `app/composables` (logique), `app/middleware` (guards), `server/` (relais d'auth).
+`app/pages` (vues), `app/layouts` (header/footer), `app/components` (composants isolés), `app/composables` (logique),
+`app/middleware` (guards), `app/utils` (`getApiError`), `app/types` (`schema.d.ts` généré par `npm run api:types`, ne pas l'éditer
+à la main ; alias lisibles dans `api.ts`), `server/` (relais d'auth).
 Un seul client HTTP côté app : `app/composables/useApi.ts` (base `/api`). Aucun `fetch` dispersé.
+
+## Conventions
+
+- Nuxt n'a pas de Server/Client Components ni de Server Actions : composants universels (rendu serveur puis interactifs),
+  routes `server/api/*` côté serveur. `.client.vue` / `<ClientOnly>` seulement si une API navigateur l'exige (Leaflet).
+- Données de page : `await useAsyncData(clé, () => api(...))`. Pendant un rechargement, garder l'ancienne liste (pas de
+  scintillement) et signaler le chargement (`loading` du champ, liste estompée, `<NuxtLoadingIndicator>` dans `app.vue`).
+- Filtres de liste dans l'URL (`?q`, `?category`) : lus via `computed` avec garde `typeof`, écrits avec `router.replace`,
+  `undefined` pour retirer une clé. Les composants de filtre ne connaissent ni l'URL ni l'API (`v-model`), la page fait le lien.
+- Formulaires : `UAuthForm` / `UForm`. Les erreurs 422 vont sous chaque champ via `formRef.setErrors`.
 
 ## Qualité du code
 
@@ -33,19 +49,23 @@ Un seul client HTTP côté app : `app/composables/useApi.ts` (base `/api`). Aucu
 
 - Objectif : le token n'est **jamais** lisible par le JavaScript du navigateur (protection contre le vol par XSS).
 - Le navigateur appelle `/api/*` (serveur Nuxt), jamais l'API Drops directement. Le serveur Nuxt ajoute `Authorization: Bearer <token>`.
-  - `server/api/auth/login.post.ts` : appelle `POST /auth/login`, pose le cookie, renvoie l'utilisateur sans le token.
+  - `server/api/auth/login.post.ts` et `register.post.ts` : une ligne chacune, appellent `relayAuth()` (`server/utils/relayAuth.ts`)
+    qui fait `POST /auth/{login|register}`, pose le cookie et renvoie l'utilisateur sans le token (même `{ user, token, expiresAt }`).
+  - **Pas de route dynamique** (`[action].post.ts`) sous `server/api/auth/` : elle intercepterait `GET /api/auth/me`, qui
+    tomberait sur le rendu Vue → le middleware rappelle `/api/auth/me` → boucle de rendu infinie (page blanche).
   - `server/api/auth/logout.post.ts` : révoque le token côté API, supprime le cookie.
   - `server/api/[...path].ts` : relais vers l'API pour tout le reste ; `/admin/*` bloqué.
 - Cookie `session` posé par le serveur : `httpOnly`, `secure` (hors dev), `sameSite: 'lax'`, `path: '/'`, expiration = `expiresAt`.
 - `apiUrl` est une clé **privée** de `runtimeConfig` (`NUXT_API_URL`), lue seulement dans `server/`.
 - Côté client, l'utilisateur connecté vit dans `useUser()` (`useState`), rempli via `GET /api/auth/me` par le middleware global.
-- Toutes les pages sont privées (`middleware/auth.global.ts`), sauf celles qui déclarent `definePageMeta({ public: true })`.
+- Toutes les pages sont privées (`middleware/auth.global.ts`), sauf celles qui déclarent `definePageMeta({ public: true })`
+  (`/login`, `/register`, `/status`). Un utilisateur connecté qui ouvre `/login` ou `/register` est renvoyé vers `/drops`.
 - 401 `unauthorized` / `invalid_token` / `token_expired` / `token_revoked` : purge la session, redirige vers le login si la page est privée.
 - 401 `invalid_credentials` : erreur affichée dans le formulaire de connexion, pas de déconnexion.
 
 ## Contrat API Drops
 
-Base : `https://drops-api-production.up.railway.app`. Référence complète : `/contract.md` et `/openapi.json`.
+Base : `https://drops-api-production.up.railway.app`. Référence complète : `app/types/schema.d.ts` (généré) et `<base>/openapi.json` en ligne.
 Ne jamais inventer de route, de champ ou de code d'erreur.
 
 ```
