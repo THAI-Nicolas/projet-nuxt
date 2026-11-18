@@ -8,6 +8,7 @@ export type DropBody =
 
 export type Drop = S["Drop"];
 export type DropPage = S["DropPage"];
+export type LikeState = S["LikeState"];
 export type Category = S["Category"];
 export type Health = S["Health"];
 export type AuthResponse = S["AuthResponse"];

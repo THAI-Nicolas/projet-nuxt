@@ -128,13 +128,9 @@ useSeoMeta({ title: () => drop.value?.title ?? "Drop" });
       </p>
 
       <footer
-        class="mt-6 flex gap-6 border-y border-line py-3 text-sm text-muted"
+        class="mt-6 flex items-center gap-6 border-y border-line py-3 text-sm text-muted"
       >
-        <span class="flex items-center gap-1">
-          <UIcon name="i-lucide-heart" class="size-4" />
-          {{ drop.likesCount }}
-          <span class="sr-only">j'aime</span>
-        </span>
+        <DropLikeButton :drop="drop" class="-ml-2.5" />
         <span class="flex items-center gap-1">
           <UIcon name="i-lucide-message-circle" class="size-4" />
           {{ drop.commentsCount }}

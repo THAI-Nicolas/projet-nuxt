@@ -43,14 +43,13 @@ defineProps<{
               class="mt-3 w-50 rounded-2xl"
             />
 
-            <div class="mt-3 flex gap-6 text-sm text-muted">
+            <div class="mt-3 flex items-center gap-6 text-sm text-muted">
+              <!-- relative z-10 : passe au-dessus du lien qui couvre la carte, sinon le clic ouvrirait le drop -->
+              <DropLikeButton :drop="drop" class="relative z-10 -ml-2.5" />
               <div class="flex items-center justify-center gap-1">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-heart preview-icon"><path d="M2 9.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5"/></svg>
-                <span>{{ drop.likesCount }}</span>
-              </div>
-              <div class="flex items-center justify-center gap-1">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-message-circle preview-icon"><path d="M2.992 16.342a2 2 0 0 1 .094 1.167l-1.065 3.29a1 1 0 0 0 1.236 1.168l3.413-.998a2 2 0 0 1 1.099.092 10 10 0 1 0-4.777-4.719"/></svg>
+                <UIcon name="i-lucide-message-circle" class="size-4" />
                 <span>{{ drop.commentsCount }}</span>
+                <span class="sr-only">commentaires</span>
               </div>
             </div>
           </div>
