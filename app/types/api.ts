@@ -9,6 +9,9 @@ export type DropBody =
 export type Drop = S["Drop"];
 export type DropPage = S["DropPage"];
 export type LikeState = S["LikeState"];
+// DropComment et pas Comment : ce nom masquerait le type DOM global
+export type DropComment = S["Comment"];
+export type CommentPage = S["CommentPage"];
 export type Category = S["Category"];
 export type Health = S["Health"];
 export type AuthResponse = S["AuthResponse"];

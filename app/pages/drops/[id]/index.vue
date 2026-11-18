@@ -24,6 +24,9 @@ const categoryLabel = computed(
   () => categories.value?.find((c) => c.id === drop.value?.category)?.label,
 );
 
+// Tenu à jour par DropComments (ajouts/suppressions optimistes)
+const commentsTotal = ref<number>();
+
 // 404 : drop inexistant, ou masqué pour quelqu'un d'autre que son auteur
 const notFound = computed(() => error.value?.status === 404);
 
@@ -133,7 +136,7 @@ useSeoMeta({ title: () => drop.value?.title ?? "Drop" });
         <DropLikeButton :drop="drop" class="-ml-2.5" />
         <span class="flex items-center gap-1">
           <UIcon name="i-lucide-message-circle" class="size-4" />
-          {{ drop.commentsCount }}
+          {{ commentsTotal ?? drop.commentsCount }}
           <span class="sr-only">commentaires</span>
         </span>
         <span class="flex items-center gap-1">
@@ -144,15 +147,11 @@ useSeoMeta({ title: () => drop.value?.title ?? "Drop" });
       </footer>
     </article>
 
-    <section
+    <DropComments
       v-if="drop"
-      aria-labelledby="comments-title"
+      v-model:total="commentsTotal"
+      :drop-id="drop.id"
       class="mt-6"
-    >
-      <h2 id="comments-title" class="text-lg font-bold">
-        Commentaires ({{ drop.commentsCount }})
-      </h2>
-      <!-- À venir : liste des commentaires (GET /drops/{id}/comments), dans un composant DropComments -->
-    </section>
+    />
   </main>
 </template>
