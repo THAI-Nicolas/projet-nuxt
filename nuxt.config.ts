@@ -14,4 +14,7 @@ export default defineNuxtConfig({
   css: ["~/assets/css/main.css"],
   // App uniquement sombre : pas de color-mode (son localStorage peut forcer le clair), tokens posés dans main.css
   ui: { colorMode: false },
+  icon: {
+    clientBundle: { scan: true },
+  },
 });

@@ -81,12 +81,22 @@ const { data, error, status, refresh } = await useAsyncData(
       <UIcon name="i-lucide-loader-circle" class="size-5 animate-spin" />
       Chargement…
     </p>
-    <div v-else-if="error" role="alert" class="p-4">
-      <p>Impossible de charger les drops.</p>
-      <button type="button" @click="refresh()" class="cursor-pointer">
-        Réessayer
-      </button>
-    </div>
+    <UEmpty
+      v-else-if="error"
+      role="alert"
+      icon="i-lucide-circle-alert"
+      title="Impossible de charger les drops"
+      description="Vérifie ta connexion puis réessaie."
+      :actions="[
+        {
+          label: 'Réessayer',
+          icon: 'i-lucide-refresh-cw',
+          onClick: () => refresh(),
+        },
+      ]"
+      class="m-4"
+    />
+
     <p v-else-if="data && data.items.length === 0" class="p-4 text-muted">
       {{
         q || category
