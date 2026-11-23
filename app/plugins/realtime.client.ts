@@ -21,6 +21,8 @@ export default defineNuxtPlugin(() => {
   const api = useApi();
   const status = useRealtimeStatus();
   const user = useUser();
+  const { logout } = useAuth();
+  const toast = useToast();
 
   const listeners = new Map<ServerMessageType, Set<AnyListener>>();
   const openListeners = new Set<() => void>();
@@ -93,10 +95,23 @@ export default defineNuxtPlugin(() => {
       if (socket !== ws) return;
       socket = null;
       status.value = { state: "closed", code: event.code };
+      if (event.code === 4001) return sessionExpired();
       // 1006 (coupure, ticket refusé), 4010, 4011… : nouveau ticket à chaque essai, jamais le même
       if (consumers === 0 || NO_RECONNECT.includes(event.code)) return;
       scheduleReconnect();
     };
+  }
+
+  // 4001 : le JWT a expiré ou a été révoqué (ex. déconnexion dans un autre onglet).
+  // logout() supprime le cookie mort, vide useUser AVANT d'aller sur /login (sinon le middleware renverrait vers /drops).
+  function sessionExpired() {
+    toast.add({
+      title: "Session expirée",
+      description: "Reconnecte-toi pour continuer.",
+      icon: "i-lucide-log-out",
+      color: "warning",
+    });
+    logout();
   }
 
   function disconnect() {
