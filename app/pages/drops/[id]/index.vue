@@ -27,6 +27,9 @@ const categoryLabel = computed(
 // Tenu à jour par DropComments (ajouts/suppressions optimistes)
 const commentsTotal = ref<number>();
 
+// Présence en direct : un seul usePresence par page (voir le composable)
+const viewers = usePresence(() => Number(id.value));
+
 // 404 : drop inexistant, ou masqué pour quelqu'un d'autre que son auteur
 const notFound = computed(() => error.value?.status === 404);
 
@@ -154,6 +157,8 @@ useSeoMeta({ title: () => drop.value?.title ?? "Drop" });
           <span class="sr-only">ouvertures</span>
         </span>
       </footer>
+
+      <DropPresence :viewers="viewers" class="mt-3" />
     </article>
 
     <DropComments
