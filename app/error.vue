@@ -1,22 +1,31 @@
 <script setup lang="ts">
 import type { NuxtError } from "#app";
+import { fr } from "@nuxt/ui/locale";
 
-defineProps<{ error: NuxtError }>();
+const props = defineProps<{ error: NuxtError }>();
+
+const is404 = computed(() => props.error.status === 404);
+useHead({ title: () => (is404.value ? "Page introuvable" : "Erreur") });
 </script>
 
 <template>
-  <main class="p-4">
-    <h1 class="text-xl font-bold">
-      {{
-        error.status === 404 ? "Page introuvable" : "Une erreur est survenue"
-      }}
-    </h1>
-    <button
-      type="button"
-      class="mt-4 underline cursor-pointer"
-      @click="clearError({ redirect: '/drops' })"
-    >
-      Retour aux drops
-    </button>
-  </main>
+  <!-- error.vue remplace app.vue : il faut redonner UApp (locale fr, toasts) -->
+  <UApp :locale="fr">
+    <NuxtLayout>
+      <main class="p-4">
+        <UError
+          :error="
+            is404
+              ? {
+                  status: 404,
+                  statusText: 'Page introuvable',
+                  message: 'Cette page n\'existe pas (ou plus).',
+                }
+              : error
+          "
+          redirect="/drops"
+        />
+      </main>
+    </NuxtLayout>
+  </UApp>
 </template>
