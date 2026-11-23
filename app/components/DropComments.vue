@@ -59,12 +59,37 @@ async function addComment(content: string) {
       method: "POST",
       body: { content },
     });
-    updateItems((items) => items.map((c) => (c.id === temp.id ? saved : c)));
+    // Le comment:created de notre propre commentaire a pu arriver AVANT cette réponse :
+    // il est alors déjà affiché, on retire juste le temporaire (et son +1)
+    const alreadyShown = data.value?.items.some((c) => c.id === saved.id);
+    updateItems(
+      (items) =>
+        alreadyShown
+          ? items.filter((c) => c.id !== temp.id)
+          : items.map((c) => (c.id === temp.id ? saved : c)),
+      alreadyShown ? -1 : 0,
+    );
   } catch (e) {
     updateItems((items) => items.filter((c) => c.id !== temp.id), -1);
     throw e; // le formulaire remet le texte et affiche l'erreur
   }
 }
+
+// En direct : commentaires des autres, et les nôtres envoyés depuis un autre onglet.
+// Dédoublonné par id : notre propre commentaire revient aussi par la socket.
+useRealtimeEvent("comment:created", ({ comment }) => {
+  if (comment.dropId !== props.dropId || !data.value) return;
+  if (data.value.items.some((c) => c.id === comment.id)) return;
+  updateItems((items) => [...items, comment], 1);
+});
+
+// shortcut: un commentaire supprimé qui n'est pas dans les pages chargées ne décrémente pas le total
+// (impossible de le distinguer de notre propre suppression optimiste, déjà comptée) ; un refresh le recale.
+useRealtimeEvent("comment:deleted", ({ dropId, commentId }) => {
+  if (dropId !== props.dropId) return;
+  if (!data.value?.items.some((c) => c.id === commentId)) return; // déjà retiré (le nôtre)
+  updateItems((items) => items.filter((c) => c.id !== commentId), -1);
+});
 
 // Une seule modale de confirmation pour toute la liste
 const commentToDelete = ref<DropComment>();
