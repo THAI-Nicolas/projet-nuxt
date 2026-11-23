@@ -1,9 +1,26 @@
 <script setup lang="ts">
 import type { Drop } from "~/types/api";
 
-defineProps<{
+const props = defineProps<{
   drop: Drop;
 }>();
+
+// Compteur local : la prop est en lecture seule, et le temps réel doit pouvoir la faire bouger
+const commentsCount = ref(props.drop.commentsCount);
+// La liste a été rechargée (filtre, refresh) : l'API fait foi
+watch(
+  () => props.drop.commentsCount,
+  (count) => (commentsCount.value = count),
+);
+
+// En direct. Pas de doublon possible ici : on ne commente pas depuis la liste
+// (en revenant du détail, la liste est rechargée depuis l'API).
+useRealtimeEvent("comment:created", ({ comment }) => {
+  if (comment.dropId === props.drop.id) commentsCount.value += 1;
+});
+useRealtimeEvent("comment:deleted", ({ dropId }) => {
+  if (dropId === props.drop.id) commentsCount.value -= 1;
+});
 </script>
 
 <template>
@@ -53,7 +70,7 @@ defineProps<{
         />
         <div class="flex items-center justify-center gap-1">
           <UIcon name="i-lucide-message-circle" class="size-4" />
-          <span>{{ drop.commentsCount }}</span>
+          <span>{{ commentsCount }}</span>
           <span class="sr-only">commentaires</span>
         </div>
       </div>
