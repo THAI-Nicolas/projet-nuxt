@@ -18,6 +18,7 @@ const year = new Date().getFullYear();
 
       <template #right>
         <div v-if="user" class="flex items-center gap-2">
+          <OnlineUsers />
           <UUser
             :name="user.displayName"
             :description="`@${user.username}`"
