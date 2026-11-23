@@ -15,7 +15,7 @@ on ne développe que le client, déployé sur Netlify. Ce fichier évolue avec l
 - Icônes : Lucide en local (`@iconify-json/lucide`), noms `i-lucide-*` (`UIcon`, prop `icon`). Pas de SVG copié à la main.
 - VueUse (`@vueuse/nuxt`) pour les utilitaires réactifs (`watchDebounced`, `useResizeObserver`…).
 - Carte : `@nuxtjs/leaflet` (pas `nuxt-leaflet`, obsolète). Toujours dans `<ClientOnly>`. Zone : Montbéliard.
-- Temps réel : prévu, choix technique non arrêté. L'API n'expose aucun WebSocket. N'implémente rien sans validation.
+- Temps réel : WebSocket natif du navigateur vers l'API (voir « Temps réel » plus bas). Pas de lib (socket.io…).
 - `server/` : uniquement le relais d'authentification (BFF) décrit plus bas. Pas de logique métier, l'API est la seule source de vérité.
 
 ## Structure
@@ -87,6 +87,7 @@ GET    /drops/{id}/comments  token?   ?page ?pageSize
 POST   /drops/{id}/comments  token    { content }
 DELETE /comments/{id}        token    (auteur)
 POST   /drops/{id}/report    token    { reason: spam|offensive|personal_info|other, details? }
+POST   /realtime/ticket      token    → { ticket, expiresAt, url }  (usage unique, 30 s)
 ```
 
 `token?` = facultatif (alimente `likedByMe`, `isMine`). **Depuis le 17/11/2026, toutes les routes sauf `GET /health` exigent un token** (sinon 401 `unauthorized`). Les routes `/admin/*` et `X-Admin-Key` sont interdites côté client.
@@ -99,6 +100,23 @@ Pièges :
 - `GET /drops` n'a pas de filtre géographique : la carte parcourt les pages.
 - Drop masqué : 404 pour tous sauf son auteur. Signaler son propre drop : 403.
 - `locked`, `precision`, `opensCount` : sens non documenté. Affiche-les sans inventer de route.
+
+## Temps réel
+
+Protocole complet : tag « Temps réel » de `<base>/openapi.json` (OpenAPI ne décrit pas les WebSocket). Messages typés à la main
+dans `app/types/realtime.ts`.
+
+- Ticket : le navigateur appelle `POST /api/realtime/ticket` via `useApi` ; le relais `[...path].ts` ajoute le Bearer.
+  Le JWT ne passe jamais dans l'URL du WebSocket. Un nouveau ticket à chaque (re)connexion.
+- **Une seule socket par onglet** : `app/plugins/realtime.client.ts` (jamais côté serveur), exposé par `useRealtime()`.
+  Aucun autre `new WebSocket`. Les composants l'utilisent dans `onMounted` / `onBeforeUnmount` uniquement :
+  `retain()` (renvoie `release`), `subscribe(type, fn)` et `onOpen(fn)` (renvoient le désabonnement), `send(message)`.
+- Après une reconnexion, l'état côté serveur est perdu : renvoyer `presence:view` dans `onOpen`.
+- Fermetures : 1000 rien ; 1006, 4010, 4011 → nouveau ticket et délai croissant (≤ 15 s) ; 4001 → `/login` ;
+  4008 et 4009 → pas de reconnexion (bug à corriger côté client).
+- `drop:opened` : ignoré (va être supprimé de l'API), ni typé ni écouté.
+- Limite : 20 messages client par 10 s (sinon 4008), 5 connexions par utilisateur (sinon 4009).
+- Test : DevTools › Réseau › WS › Messages, `<base>/ws-playground`, deux comptes dans deux navigateurs.
 
 ## Erreurs
 

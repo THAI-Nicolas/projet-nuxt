@@ -8,6 +8,23 @@ const api = useApi();
 const { data, error, status, refresh } = await useAsyncData("health", () =>
   api<Health>("/health"),
 );
+
+// Temps réel : la page prend la connexion le temps d'être affichée (le ticket exige d'être connecté)
+const user = useUser();
+const realtime = useRealtimeStatus();
+const realtimeLabel = computed(() => {
+  if (!user.value) return "connexion requise";
+  const { state, code } = realtime.value;
+  if (state === "open") return "connecté";
+  if (state === "connecting") return "connexion…";
+  return code ? `déconnecté (code ${code})` : "déconnecté";
+});
+
+let release: (() => void) | undefined;
+onMounted(() => {
+  if (user.value) release = useRealtime().retain();
+});
+onBeforeUnmount(() => release?.());
 </script>
 <template>
   <main class="mx-auto max-w-md p-4">
@@ -31,6 +48,11 @@ const { data, error, status, refresh } = await useAsyncData("health", () =>
       <dd>{{ data.status }}</dd>
       <dt>Base de données</dt>
       <dd>{{ data.db }}</dd>
+    </dl>
+
+    <dl class="mt-2 grid grid-cols-2 gap-2">
+      <dt>Temps réel</dt>
+      <dd aria-live="polite">{{ realtimeLabel }}</dd>
     </dl>
 
     <UButton
