@@ -5,6 +5,9 @@ const year = new Date().getFullYear();
 
 <template>
   <div class="flex min-h-dvh flex-col">
+    <!-- Notifications en toast sur toutes les pages, uniquement connecté -->
+    <RealtimeNotifications v-if="user" />
+
     <UHeader to="/drops" :toggle="false" :ui="{ container: 'max-w-2xl' }">
       <template #title>
         <span class="flex items-center gap-2 text-xl font-bold">
