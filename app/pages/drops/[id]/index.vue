@@ -30,8 +30,22 @@ const commentsTotal = ref<number>();
 // Présence en direct : un seul usePresence par page (voir le composable)
 const viewers = usePresence(() => Number(id.value));
 
-// 404 : drop inexistant, ou masqué pour quelqu'un d'autre que son auteur
-const notFound = computed(() => error.value?.status === 404);
+// En direct : le drop affiché est modifié (par son auteur, ailleurs) ou supprimé / masqué
+useRealtimeEvent("drop:updated", ({ drop: updated }) => {
+  if (updated.id === drop.value?.id) drop.value = updated;
+});
+// L'id supprimé plutôt qu'un booléen : rien à remettre à zéro si on passe à un autre drop
+const deletedId = ref<number>();
+useRealtimeEvent("drop:deleted", ({ dropId }) => {
+  deletedId.value = dropId;
+});
+
+// 404 : drop inexistant, ou masqué pour quelqu'un d'autre que son auteur (au chargement ou en direct)
+const notFound = computed(
+  () =>
+    error.value?.status === 404 ||
+    (deletedId.value !== undefined && deletedId.value === drop.value?.id),
+);
 
 useSeoMeta({ title: () => drop.value?.title ?? "Drop" });
 </script>
@@ -162,7 +176,7 @@ useSeoMeta({ title: () => drop.value?.title ?? "Drop" });
     </article>
 
     <DropComments
-      v-if="drop"
+      v-if="drop && !notFound"
       v-model:total="commentsTotal"
       :drop-id="drop.id"
       class="mt-6"
