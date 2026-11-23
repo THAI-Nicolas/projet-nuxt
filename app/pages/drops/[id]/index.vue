@@ -81,7 +81,11 @@ useSeoMeta({ title: () => drop.value?.title ?? "Drop" });
             </template>
           </UUser>
           <!-- Actions réservées à l'auteur : rien n'est rendu sur le drop de quelqu'un d'autre -->
-          <DropOwnerActions v-if="drop.isMine" :drop="drop" />
+          <DropOwnerActions
+            v-if="drop.isMine"
+            :drop-id="drop.id"
+            :title="drop.title"
+          />
         </div>
 
         <div class="flex flex-wrap gap-2">
@@ -133,7 +137,12 @@ useSeoMeta({ title: () => drop.value?.title ?? "Drop" });
       <footer
         class="mt-6 flex items-center gap-6 border-y border-line py-3 text-sm text-muted"
       >
-        <DropLikeButton :drop="drop" class="-ml-2.5" />
+        <DropLikeButton
+          :drop-id="drop.id"
+          :liked-by-me="drop.likedByMe"
+          :likes-count="drop.likesCount"
+          class="-ml-2.5"
+        />
         <span class="flex items-center gap-1">
           <UIcon name="i-lucide-message-circle" class="size-4" />
           {{ commentsTotal ?? drop.commentsCount }}

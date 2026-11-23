@@ -1,21 +1,23 @@
 <script setup lang="ts">
-import type { Drop, LikeState } from "~/types/api";
+import type { LikeState } from "~/types/api";
 
 const props = defineProps<{
-  drop: Drop;
+  dropId: number;
+  likedByMe: boolean;
+  likesCount: number;
 }>();
 
 const api = useApi();
 const toast = useToast();
 
-// État local : les données de useAsyncData sont un shallowRef (Nuxt 4), muter drop.likedByMe ne re-rendrait rien
-const isLiked = ref(props.drop.likedByMe);
-const likesCount = ref(props.drop.likesCount);
+// État local : une prop est en lecture seule, et le like doit basculer tout de suite (optimiste)
+const isLiked = ref(props.likedByMe);
+const likesCount = ref(props.likesCount);
 const isPending = ref(false);
 
 // Le parent a rechargé le drop (refresh, nouvelle recherche) : l'API fait foi
 watch(
-  () => [props.drop.likedByMe, props.drop.likesCount] as const,
+  () => [props.likedByMe, props.likesCount] as const,
   ([liked, count]) => {
     isLiked.value = liked;
     likesCount.value = count;
@@ -35,7 +37,7 @@ async function toggleLike() {
   likesCount.value = previousCount + (wasLiked ? -1 : 1);
 
   try {
-    const state = await api<LikeState>(`/drops/${props.drop.id}/like`, {
+    const state = await api<LikeState>(`/drops/${props.dropId}/like`, {
       method: wasLiked ? "DELETE" : "POST",
     });
     // Confirmé : on recale sur la réponse (le compteur a pu bouger à cause d'autres utilisateurs)

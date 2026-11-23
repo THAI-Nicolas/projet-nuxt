@@ -1,9 +1,8 @@
 <script setup lang="ts">
-import type { Drop } from "~/types/api";
-
 // À n'afficher que si drop.isMine : le parent fait le v-if, l'API refuse de toute façon (403)
 const props = defineProps<{
-  drop: Drop;
+  dropId: number;
+  title: string;
 }>();
 
 const api = useApi();
@@ -30,7 +29,7 @@ async function remove() {
   deleting.value = true;
   errorMessage.value = "";
   try {
-    await api(`/drops/${props.drop.id}`, { method: "DELETE" });
+    await api(`/drops/${props.dropId}`, { method: "DELETE" });
     await leave("Drop supprimé");
   } catch (e) {
     const apiError = getApiError(e);
@@ -47,7 +46,7 @@ async function remove() {
 <template>
   <div class="flex gap-2">
     <UButton
-      :to="`/drops/${drop.id}/edit`"
+      :to="`/drops/${dropId}/edit`"
       icon="i-lucide-pencil"
       label="Modifier"
       color="neutral"
@@ -58,7 +57,7 @@ async function remove() {
     <UModal
       v-model:open="open"
       title="Supprimer ce drop ?"
-      :description="`« ${drop.title} » sera supprimé définitivement.`"
+      :description="`« ${title} » sera supprimé définitivement.`"
       :dismissible="!deleting"
       :close="!deleting"
       :ui="{ footer: 'justify-end' }"
