@@ -112,6 +112,8 @@ dans `app/types/realtime.ts`.
   Aucun autre `new WebSocket`. Les composants l'utilisent dans `onMounted` / `onBeforeUnmount` uniquement :
   `retain()` (renvoie `release`), `subscribe(type, fn)` et `onOpen(fn)` (renvoient le désabonnement), `send(message)`.
 - Après une reconnexion, l'état côté serveur est perdu : renvoyer `presence:view` dans `onOpen`.
+- Présence : `usePresence(dropId)` **une seule fois par page** (le `presence:leave` d'un composant efface celui des
+  autres), la page passe `viewers` aux enfants (`DropPresence`).
 - Fermetures : 1000 rien ; 1006, 4010, 4011 → nouveau ticket et délai croissant (≤ 15 s) ; 4001 → `/login` ;
   4008 et 4009 → pas de reconnexion (bug à corriger côté client).
 - `drop:opened` : ignoré (va être supprimé de l'API), ni typé ni écouté.
