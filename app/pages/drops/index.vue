@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Category, DropPage } from "~/types/api";
+import type { Category, Drop, DropPage } from "~/types/api";
 
 const route = useRoute();
 const router = useRouter();
@@ -46,6 +46,42 @@ const { data, error, status, refresh } = await useAsyncData(
   // Sans effet au rendu serveur, qui attend toujours les données.
   { watch: [q, category], lazy: true },
 );
+
+// Liste vivante : les événements temps réel sont fusionnés dans les données de useAsyncData.
+// data est un shallowRef : on remplace l'objet entier, sinon rien ne se re-rend.
+function updateItems(update: (items: Drop[]) => Drop[], delta = 0) {
+  if (!data.value) return;
+  data.value = {
+    ...data.value,
+    items: update(data.value.items),
+    total: data.value.total + delta,
+  };
+}
+
+const isShown = (dropId: number) =>
+  data.value?.items.some((d) => d.id === dropId) ?? false;
+
+useRealtimeEvent("drop:created", ({ drop }) => {
+  if (isShown(drop.id)) return; // déjà là (rechargement arrivé entre-temps)
+  // Ne pas afficher un drop qui ne correspond pas au filtre en cours.
+  // shortcut: la recherche ?q est faite par l'API (règles inconnues côté client) : pendant une recherche,
+  // on n'insère rien plutôt que de deviner ; le drop apparaîtra au prochain chargement.
+  if (q.value || (category.value && drop.category !== category.value)) return;
+  updateItems((items) => [drop, ...items], 1); // tri par défaut : les plus récents en premier
+});
+
+// Le drop est construit pour nous (isMine, likedByMe…) : on le remplace tel quel
+useRealtimeEvent("drop:updated", ({ drop }) => {
+  if (isShown(drop.id))
+    updateItems((items) => items.map((d) => (d.id === drop.id ? drop : d)));
+});
+
+// Supprimé, ou masqué après signalements.
+// shortcut: un drop absent de la page chargée ne décrémente pas le total (on ne sait pas s'il correspondait au filtre).
+useRealtimeEvent("drop:deleted", ({ dropId }) => {
+  if (isShown(dropId))
+    updateItems((items) => items.filter((d) => d.id !== dropId), -1);
+});
 </script>
 
 <template>

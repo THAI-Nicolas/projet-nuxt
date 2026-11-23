@@ -31,7 +31,9 @@ export type ServerMessage =
   | { type: "pong"; data: { serverTime: string } }
   | { type: "presence:online"; data: { users: PublicUser[] } }
   | { type: "presence:drop"; data: { dropId: number; viewers: PublicUser[] } }
-  | { type: "drop:created" | "drop:updated"; data: { drop: Drop } }
+  // Deux membres séparés (pas `type: "drop:created" | "drop:updated"`) : sinon RealtimeData ne les trouve pas
+  | { type: "drop:created"; data: { drop: Drop } }
+  | { type: "drop:updated"; data: { drop: Drop } }
   | { type: "drop:deleted"; data: { dropId: number } }
   | { type: "like:updated"; data: { dropId: number; likesCount: number } }
   | { type: "comment:created"; data: { comment: DropComment } }
