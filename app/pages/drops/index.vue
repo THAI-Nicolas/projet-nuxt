@@ -42,7 +42,9 @@ const { data, error, status, refresh } = await useAsyncData(
     api<DropPage>("/drops", {
       query: { q: q.value || undefined, category: category.value },
     }),
-  { watch: [q, category] },
+  // lazy : en navigation client, la page s'affiche tout de suite (skeletons) au lieu d'attendre l'API.
+  // Sans effet au rendu serveur, qui attend toujours les données.
+  { watch: [q, category], lazy: true },
 );
 </script>
 
@@ -73,14 +75,10 @@ const { data, error, status, refresh } = await useAsyncData(
       />
     </header>
 
-    <p
-      v-if="status === 'pending' && !data"
-      role="status"
-      class="flex items-center gap-2 p-4 text-muted"
-    >
-      <UIcon name="i-lucide-loader-circle" class="size-5 animate-spin" />
-      Chargement…
-    </p>
+    <div v-if="status === 'pending' && !data" role="status">
+      <span class="sr-only">Chargement des drops…</span>
+      <DropCardSkeleton v-for="n in 4" :key="n" />
+    </div>
     <UEmpty
       v-else-if="error"
       role="alert"
