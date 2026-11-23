@@ -22,7 +22,8 @@ const year = new Date().getFullYear();
           <UUser
             :name="user.displayName"
             :description="`@${user.username}`"
-            :avatar="{ alt: user.displayName }"
+            :avatar="{ src: user.avatarUrl ?? undefined, alt: user.displayName }"
+            to="/profile"
             :ui="{ wrapper: 'hidden sm:block' }"
           />
           <UButton
