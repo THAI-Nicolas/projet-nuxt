@@ -14,9 +14,18 @@ const { data, error, status, refresh } = await useAsyncData("health", () =>
     <h1 class="text-2xl font-bold">Statut de l'API</h1>
 
     <p v-if="status === 'pending'" role="status">Vérification…</p>
-    <p v-else-if="error" role="alert" class="text-red-700">
-      API indisponible (erreur {{ error.status }})
-    </p>
+
+    <UAlert
+      v-else-if="error"
+      role="alert"
+      color="error"
+      variant="subtle"
+      icon="i-lucide-circle-alert"
+      title="API indisponible"
+      :description="`Erreur ${error.status}`"
+      class="mt-4"
+    />
+
     <dl v-else-if="data" class="mt-4 grid grid-cols-2 gap-2">
       <dt>API</dt>
       <dd>{{ data.status }}</dd>
@@ -24,13 +33,14 @@ const { data, error, status, refresh } = await useAsyncData("health", () =>
       <dd>{{ data.db }}</dd>
     </dl>
 
-    <button
-      type="button"
-      class="mt-4 rounded border px-3 py-1"
-      :disabled="status === 'pending'"
+    <UButton
+      label="Rafraîchir"
+      icon="i-lucide-refresh-cw"
+      variant="outline"
+      color="neutral"
+      class="mt-4"
+      :loading="status === 'pending'"
       @click="refresh()"
-    >
-      Rafraîchir
-    </button>
+    />
   </main>
 </template>
