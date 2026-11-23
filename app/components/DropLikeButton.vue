@@ -24,6 +24,14 @@ watch(
   },
 );
 
+// En direct : un like posé ou retiré par n'importe qui (nous compris).
+// Seul le compteur change : likedByMe reste le nôtre.
+// Pendant notre propre requête, on ignore : la réponse de l'API recalera le compteur juste après.
+useRealtimeEvent("like:updated", (data) => {
+  if (data.dropId === props.dropId && !isPending.value)
+    likesCount.value = data.likesCount;
+});
+
 async function toggleLike() {
   // Une requête à la fois : deux requêtes croisées pourraient se terminer dans le désordre
   if (isPending.value) return;
