@@ -1,17 +1,15 @@
 import type { Drop, DropComment, PublicUser } from "./api";
 
 // OpenAPI ne décrit pas les WebSocket : recopié à la main depuis le tag « Temps réel » de <base>/openapi.json.
-// À tenir à jour si le contrat change. drop:opened volontairement absent : il va être supprimé de l'API.
+// À tenir à jour si le contrat change (/contract.md, section Temps réel).
 
 export interface RealtimeNotification {
-  kind: "drop_opened" | "drop_liked" | "drop_commented";
+  kind: "drop_liked" | "drop_commented";
   dropId: number;
   dropTitle: string;
   by: PublicUser;
   at: string;
 }
-
-type LockMode = "on" | "off";
 
 export type ClientMessage =
   | { type: "presence:view"; data: { dropId: number } }
@@ -24,7 +22,6 @@ export type ServerMessage =
       data: {
         user: PublicUser;
         serverTime: string;
-        lockMode: LockMode;
         online: PublicUser[];
       };
     }
@@ -35,11 +32,15 @@ export type ServerMessage =
   | { type: "drop:created"; data: { drop: Drop } }
   | { type: "drop:updated"; data: { drop: Drop } }
   | { type: "drop:deleted"; data: { dropId: number } }
-  | { type: "like:updated"; data: { dropId: number; likesCount: number } }
+  | {
+      type: "like:updated";
+      data: { dropId: number; likesCount: number; dislikesCount: number };
+    }
   | { type: "comment:created"; data: { comment: DropComment } }
+  // Compteurs de réactions changés, ou commentaire supprimé gardé en trace (deleted: true)
+  | { type: "comment:updated"; data: { comment: DropComment } }
   | { type: "comment:deleted"; data: { dropId: number; commentId: number } }
   | { type: "notification"; data: RealtimeNotification }
-  | { type: "settings:updated"; data: { lockMode: LockMode } }
   | {
       type: "error";
       data: { code: "bad_message" | "drop_not_found"; message: string };
@@ -47,7 +48,7 @@ export type ServerMessage =
 
 export type ServerMessageType = ServerMessage["type"];
 
-// Les data d'un type de message : RealtimeData<"like:updated"> = { dropId, likesCount }
+// Les data d'un type de message : RealtimeData<"drop:deleted"> = { dropId }
 export type RealtimeData<T extends ServerMessageType> = Extract<
   ServerMessage,
   { type: T }

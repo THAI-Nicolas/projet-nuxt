@@ -17,7 +17,8 @@ const commentsPath = computed(() => `/drops/${props.dropId}/comments`);
 
 const { data, error, refresh } = await useAsyncData(
   () => `comments-${props.dropId}`,
-  () => api<CommentPage>(commentsPath.value, { query: { pageSize: PAGE_SIZE } }),
+  () =>
+    api<CommentPage>(commentsPath.value, { query: { pageSize: PAGE_SIZE } }),
 );
 
 watchEffect(() => {
@@ -47,9 +48,16 @@ async function addComment(content: string) {
   const temp: DropComment = {
     id: --lastTempId,
     dropId: props.dropId,
+    parentId: null,
     content,
     author: { id, username, displayName, avatarUrl },
     isMine: true,
+    deleted: false,
+    repliesCount: 0,
+    likesCount: 0,
+    dislikesCount: 0,
+    likedByMe: false,
+    dislikedByMe: false,
     createdAt: new Date().toISOString(),
   };
   updateItems((items) => [...items, temp], 1);
@@ -78,7 +86,13 @@ async function addComment(content: string) {
 // En direct : commentaires des autres, et les nôtres envoyés depuis un autre onglet.
 // Dédoublonné par id : notre propre commentaire revient aussi par la socket.
 useRealtimeEvent("comment:created", ({ comment }) => {
-  if (comment.dropId !== props.dropId || !data.value) return;
+  // Les réponses (parentId renseigné) n'ont pas leur place dans la liste des commentaires de premier niveau
+  if (
+    comment.dropId !== props.dropId ||
+    comment.parentId !== null ||
+    !data.value
+  )
+    return;
   if (data.value.items.some((c) => c.id === comment.id)) return;
   updateItems((items) => [...items, comment], 1);
 });
@@ -144,12 +158,16 @@ async function loadMore() {
     const knownIds = new Set(data.value.items.map((c) => c.id));
     data.value = {
       ...next,
-      items: [...data.value.items, ...next.items.filter((c) => !knownIds.has(c.id))],
+      items: [
+        ...data.value.items,
+        ...next.items.filter((c) => !knownIds.has(c.id)),
+      ],
     };
   } catch (e) {
     toast.add({
       title: "Impossible de charger la suite",
-      description: getApiError(e)?.message ?? "Vérifie ta connexion puis réessaie.",
+      description:
+        getApiError(e)?.message ?? "Vérifie ta connexion puis réessaie.",
       icon: "i-lucide-circle-alert",
       color: "error",
     });
@@ -171,7 +189,13 @@ async function loadMore() {
       icon="i-lucide-circle-alert"
       title="Impossible de charger les commentaires"
       description="Vérifie ta connexion puis réessaie."
-      :actions="[{ label: 'Réessayer', icon: 'i-lucide-refresh-cw', onClick: () => refresh() }]"
+      :actions="[
+        {
+          label: 'Réessayer',
+          icon: 'i-lucide-refresh-cw',
+          onClick: () => refresh(),
+        },
+      ]"
     />
 
     <template v-else-if="data">
@@ -240,7 +264,12 @@ async function loadMore() {
       :ui="{ footer: 'justify-end' }"
     >
       <template #footer="{ close }">
-        <UButton label="Annuler" color="neutral" variant="ghost" @click="close" />
+        <UButton
+          label="Annuler"
+          color="neutral"
+          variant="ghost"
+          @click="close"
+        />
         <UButton
           icon="i-lucide-trash-2"
           label="Supprimer"

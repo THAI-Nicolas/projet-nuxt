@@ -76,16 +76,20 @@ GET    /auth/me              token
 PATCH  /auth/me              token    { displayName?, bio?, avatarUrl? }
 GET    /users/{username}     token?
 GET    /categories           public   note | photo | tip | riddle
-GET    /drops                token?   ?page ?pageSize(≤50) ?q ?category ?author ?sort=recent|popular
+GET    /drops                token?   ?page ?pageSize(≤50) ?q ?category ?author ?sort=recent|popular ?bbox ?near ?radius
 GET    /drops/{id}           token?
 POST   /drops                token    { title, content, category, imageUrl?, lat, lng }
 PATCH  /drops/{id}           token    (auteur) mêmes champs, optionnels
 DELETE /drops/{id}           token    (auteur)
-POST   /drops/{id}/like      token    → { liked, likesCount }
-DELETE /drops/{id}/like      token    → { liked, likesCount }
-GET    /drops/{id}/comments  token?   ?page ?pageSize
-POST   /drops/{id}/comments  token    { content }
+POST   /drops/{id}/like      token    → { liked, disliked, likesCount, dislikesCount }
+DELETE /drops/{id}/like      token    → idem
+POST   /drops/{id}/dislike   token    → idem
+DELETE /drops/{id}/dislike   token    → idem
+GET    /drops/{id}/comments  token?   ?page ?pageSize   (premier niveau seulement, avec repliesCount)
+POST   /drops/{id}/comments  token    { content, parentId? }
+GET    /comments/{id}/replies token   ?page ?pageSize   (réponses d'un commentaire racine, plus anciennes d'abord)
 DELETE /comments/{id}        token    (auteur)
+POST   /comments/{id}/like   token    → { liked, disliked, likesCount, dislikesCount } (et DELETE, et /dislike)
 POST   /drops/{id}/report    token    { reason: spam|offensive|personal_info|other, details? }
 POST   /realtime/ticket      token    → { ticket, expiresAt, url }  (usage unique, 30 s)
 ```
@@ -97,13 +101,17 @@ Pièges :
 - Corps stricts : un champ inconnu renvoie 422. Aucune conversion de type : `lat`/`lng` sont des `number`.
 - Les erreurs de coordonnées arrivent sous `fields.location`.
 - `photo` exige `imageUrl` (une URL : l'API ne gère pas d'upload).
-- `GET /drops` n'a pas de filtre géographique : la carte parcourt les pages.
+- `GET /drops?bbox=minLng,minLat,maxLng,maxLat` : **longitude d'abord** (pas l'ordre Leaflet). `near` et `bbox` s'excluent.
 - Drop masqué : 404 pour tous sauf son auteur. Signaler son propre drop : 403.
-- `locked`, `precision`, `opensCount` : sens non documenté. Affiche-les sans inventer de route.
+- Like et dislike s'excluent (drops et commentaires) : poser l'un retire l'autre. Routes idempotentes.
+- Réponses sur un seul niveau : `parentId` est toujours un commentaire racine (répondre à une réponse la rattache à la racine).
+  `Drop.commentsCount` compte racines et réponses ; le `total` de `GET /drops/{id}/comments` ne compte que les racines.
+- Commentaire racine supprimé avec des réponses : reste en « trace » (`deleted: true`, `content: ""`, auteur anonymisé),
+  disparaît avec sa dernière réponse. Réagir à une trace : 404. Une réponse supprimée disparaît tout de suite.
 
 ## Temps réel
 
-Protocole complet : tag « Temps réel » de `<base>/openapi.json` (OpenAPI ne décrit pas les WebSocket). Messages typés à la main
+Protocole complet : `<base>/contract.md` (section Temps réel) et `<base>/ws-docs` (OpenAPI ne décrit pas les WebSocket). Messages typés à la main
 dans `app/types/realtime.ts`.
 
 - Ticket : le navigateur appelle `POST /api/realtime/ticket` via `useApi` ; le relais `[...path].ts` ajoute le Bearer.
@@ -117,7 +125,8 @@ dans `app/types/realtime.ts`.
   autres), la page passe `viewers` aux enfants (`DropPresence`).
 - Fermetures : 1000 rien ; 1006, 4010, 4011 → nouveau ticket et délai croissant (≤ 15 s) ; 4001 → `/login` ;
   4008 et 4009 → pas de reconnexion (bug à corriger côté client).
-- `drop:opened` : ignoré (va être supprimé de l'API), ni typé ni écouté.
+- `hello` : `{ user, serverTime, online }`. `comment:created` vaut aussi pour les réponses (`parentId` renseigné) ;
+  `comment:updated` (compteurs de réactions, ou trace `deleted: true`) ; `like:updated` porte `likesCount` et `dislikesCount`.
 - Limite : 20 messages client par 10 s (sinon 4008), 5 connexions par utilisateur (sinon 4009).
 - Test : DevTools › Réseau › WS › Messages, `<base>/ws-playground`, deux comptes dans deux navigateurs.
 

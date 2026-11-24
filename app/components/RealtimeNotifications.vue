@@ -7,9 +7,9 @@ import type { RealtimeNotification } from "~/types/realtime";
 
 const toast = useToast();
 
-// drop_opened ignoré, comme le message drop:opened (mécanique d'ouverture à proximité qui va disparaître)
-const MESSAGES: Partial<
-  Record<RealtimeNotification["kind"], { action: string; icon: string }>
+const MESSAGES: Record<
+  RealtimeNotification["kind"],
+  { action: string; icon: string }
 > = {
   drop_liked: { action: "a aimé ton drop", icon: "i-lucide-heart" },
   drop_commented: {

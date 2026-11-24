@@ -11,7 +11,11 @@ const api = useApi();
 const id = computed(() => String(route.params.id));
 
 // Clé réactive : un cache par drop
-const { data: drop, error, refresh } = await useAsyncData(
+const {
+  data: drop,
+  error,
+  refresh,
+} = await useAsyncData(
   () => `drop-${id.value}`,
   () => api<Drop>(`/drops/${id.value}`),
 );
@@ -75,7 +79,13 @@ useSeoMeta({ title: () => drop.value?.title ?? "Drop" });
       icon="i-lucide-circle-alert"
       title="Impossible de charger ce drop"
       description="Vérifie ta connexion puis réessaie."
-      :actions="[{ label: 'Réessayer', icon: 'i-lucide-refresh-cw', onClick: () => refresh() }]"
+      :actions="[
+        {
+          label: 'Réessayer',
+          icon: 'i-lucide-refresh-cw',
+          onClick: () => refresh(),
+        },
+      ]"
       class="mt-6"
     />
 
@@ -112,14 +122,6 @@ useSeoMeta({ title: () => drop.value?.title ?? "Drop" });
             class="rounded-full"
           />
           <UBadge
-            v-if="drop.locked"
-            icon="i-lucide-lock"
-            label="Verrouillé"
-            color="neutral"
-            variant="subtle"
-            class="rounded-full"
-          />
-          <UBadge
             v-if="drop.hidden"
             icon="i-lucide-eye-off"
             label="Masqué"
@@ -146,9 +148,6 @@ useSeoMeta({ title: () => drop.value?.title ?? "Drop" });
       <p class="mt-4 flex items-center gap-1 text-sm text-muted">
         <UIcon name="i-lucide-map-pin" class="size-4 shrink-0" />
         {{ drop.location.lat.toFixed(4) }}, {{ drop.location.lng.toFixed(4) }}
-        <span v-if="drop.location.precision === 'approx'">
-          · position approximative
-        </span>
       </p>
       <!-- Même carte que la liste, avec la seule épingle du drop ; la molette fait défiler la page -->
       <DropsMap
@@ -171,11 +170,6 @@ useSeoMeta({ title: () => drop.value?.title ?? "Drop" });
           <UIcon name="i-lucide-message-circle" class="size-4" />
           {{ commentsTotal ?? drop.commentsCount }}
           <span class="sr-only">commentaires</span>
-        </span>
-        <span class="flex items-center gap-1">
-          <UIcon name="i-lucide-eye" class="size-4" />
-          {{ drop.opensCount }}
-          <span class="sr-only">ouvertures</span>
         </span>
       </footer>
 
