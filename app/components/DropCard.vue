@@ -25,6 +25,17 @@ useRealtimeEvent("comment:created", ({ comment }) => {
 useRealtimeEvent("comment:deleted", ({ dropId }) => {
   if (dropId === props.drop.id) commentsCount.value -= 1;
 });
+
+// Texte long coupé dans la liste, déplié sur place par « Lire la suite » (le détail affiche toujours tout)
+const MAX_CHARS = 280;
+const expanded = ref(false);
+const content = computed(() => props.drop.content ?? "");
+const long = computed(() => content.value.length > MAX_CHARS);
+const text = computed(() =>
+  long.value && !expanded.value
+    ? `${content.value.slice(0, MAX_CHARS).trimEnd()}…`
+    : content.value,
+);
 </script>
 
 <template>
@@ -55,7 +66,17 @@ useRealtimeEvent("comment:deleted", ({ dropId }) => {
           {{ drop.title }}
         </NuxtLink>
       </h2>
-      <p v-if="drop.content" class="mt-1">{{ drop.content }}</p>
+      <p v-if="drop.content" class="mt-1 whitespace-pre-line">{{ text }}</p>
+      <!-- relative z-10 : au-dessus du lien qui couvre la carte, sinon le clic ouvrirait le drop -->
+      <UButton
+        v-if="long"
+        :label="expanded ? 'Réduire' : 'Lire la suite'"
+        variant="link"
+        size="xs"
+        :aria-expanded="expanded"
+        class="relative z-10 -ml-1 px-1"
+        @click="expanded = !expanded"
+      />
 
       <img
         v-if="drop.imageUrl"

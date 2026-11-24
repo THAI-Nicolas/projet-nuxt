@@ -1,4 +1,4 @@
-// Département MMI (exemple de l'OpenAPI) : centre des cartes, et point de départ dans la zone autorisée
+// Département MMI (exemple de l'OpenAPI) : centre des cartes et position par défaut d'un nouveau drop
 export const MMI = { lat: 47.49561, lng: 6.80544 };
 
 // Tuiles OpenStreetMap standard (claires) : gratuites sans clé, attribution obligatoire (politique d'usage OSM).

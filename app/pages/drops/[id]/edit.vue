@@ -33,7 +33,7 @@ async function update(body: DropBody) {
     lat: location.lat,
     lng: location.lng,
   };
-  // Seuls les champs modifiés partent : ne renvoie pas une position non touchée (zone, précision approx)
+  // Seuls les champs modifiés partent : ne renvoie pas une position non touchée (précision approx)
   const changes = Object.fromEntries(
     Object.entries(body).filter(
       ([key, value]) => value !== original[key as keyof DropBody],

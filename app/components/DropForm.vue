@@ -94,7 +94,7 @@ async function onSubmit({ data }: FormSubmitEvent<DropState>) {
     requestId.value = apiError?.requestId ?? "";
 
     if (apiError?.status === 422) {
-      // Erreurs de coordonnées (type, bornes, zone) rangées sous `location` par l'API
+      // Erreurs de coordonnées (type, bornes) rangées sous `location` par l'API
       form.value?.setErrors(
         Object.entries(apiError.fields ?? {}).map(([name, messages]) => ({
           name,
@@ -147,10 +147,7 @@ async function onSubmit({ data }: FormSubmitEvent<DropState>) {
       name="location"
       label="Position"
       required
-      :help="
-        locateError ||
-        'À 3 km au plus du département MMI (zone entourée) : clique sur la carte ou fais glisser l’épingle.'
-      "
+      :help="locateError || 'Clique sur la carte ou fais glisser l’épingle.'"
     >
       <div class="grid grid-cols-2 gap-3">
         <UFormField label="Latitude" size="sm">

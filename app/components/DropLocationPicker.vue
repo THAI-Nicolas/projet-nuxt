@@ -12,9 +12,6 @@ import type {
 const lat = defineModel<number | null>("lat", { required: true });
 const lng = defineModel<number | null>("lng", { required: true });
 
-// Zone autorisée par l'API (erreur 422 sous `location` au-delà)
-const ZONE_RADIUS_M = 3000;
-
 const map = shallowRef<LeafletMap>();
 
 // Pas d'épingle tant qu'un des deux champs est vide
@@ -64,15 +61,6 @@ watch(position, (p) => {
           :attribution="TILE_ATTRIBUTION"
           layer-type="base"
           name="OpenStreetMap"
-        />
-        <!-- Non interactif : un clic dans la zone pose l'épingle au lieu d'être capté par le cercle -->
-        <LCircle
-          :lat-lng="[MMI.lat, MMI.lng]"
-          :radius="ZONE_RADIUS_M"
-          :interactive="false"
-          color="#7b71ff"
-          :weight="1"
-          :fill-opacity="0.08"
         />
         <LMarker
           v-if="position"

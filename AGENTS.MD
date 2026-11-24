@@ -95,7 +95,7 @@ POST   /realtime/ticket      token    → { ticket, expiresAt, url }  (usage uni
 Pièges :
 
 - Corps stricts : un champ inconnu renvoie 422. Aucune conversion de type : `lat`/`lng` sont des `number`.
-- Un drop ne peut être créé qu'à 3 km au plus du département MMI. Les erreurs de coordonnées arrivent sous `fields.location`.
+- Les erreurs de coordonnées arrivent sous `fields.location`.
 - `photo` exige `imageUrl` (une URL : l'API ne gère pas d'upload).
 - `GET /drops` n'a pas de filtre géographique : la carte parcourt les pages.
 - Drop masqué : 404 pour tous sauf son auteur. Signaler son propre drop : 403.
