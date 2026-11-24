@@ -37,8 +37,11 @@ function onReady(leafletMap: LeafletMap) {
   fit();
 }
 
-// Recadre quand la liste change (filtre, nouveau drop), pas sur un like ou un commentaire
-watch(() => props.drops.map((d) => d.id).join(), fit);
+// Recadre quand la liste change (filtre, nouveau drop) ou qu'un drop est déplacé, pas sur un like ou un commentaire
+watch(
+  () => props.drops.map((d) => `${d.id}:${latLng(d).join()}`).join(";"),
+  fit,
+);
 
 // Survol de la liste : on met en avant sans déplacer la carte, sauf si l'épingle est hors de vue
 watch(

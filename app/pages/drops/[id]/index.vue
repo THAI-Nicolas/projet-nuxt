@@ -150,6 +150,13 @@ useSeoMeta({ title: () => drop.value?.title ?? "Drop" });
           · position approximative
         </span>
       </p>
+      <!-- Même carte que la liste, avec la seule épingle du drop ; la molette fait défiler la page -->
+      <DropsMap
+        :drops="[drop]"
+        :active-id="drop.id"
+        :interactive="false"
+        class="mt-3 h-64"
+      />
 
       <footer
         class="mt-6 flex items-center gap-6 border-y border-line py-3 text-sm text-muted"
