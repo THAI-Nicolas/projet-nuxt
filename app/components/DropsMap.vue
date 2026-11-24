@@ -23,6 +23,10 @@ const latLng = (drop: Drop): LatLngTuple => [
 ];
 const find = (id?: number) => props.drops.find((d) => d.id === id);
 
+// Vue de départ, ensuite fit() cadre les épingles. Constante et pas `:center="[…]"` dans le template :
+// un nouveau tableau à chaque rendu ferait recentrer LMap sur MMI et annulerait le cadrage.
+const initialCenter: [number, number] = [MMI.lat, MMI.lng];
+
 // Cadre toutes les épingles
 function fit() {
   if (map.value && props.drops.length)
@@ -86,7 +90,7 @@ defineExpose({ flyTo });
     <ClientOnly>
       <LMap
         :zoom="14"
-        :center="[MMI.lat, MMI.lng]"
+        :center="initialCenter"
         :use-global-leaflet="false"
         :options="{ scrollWheelZoom: interactive }"
         @ready="onReady"

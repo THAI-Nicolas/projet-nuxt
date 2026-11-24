@@ -45,7 +45,8 @@ function locate() {
       locating.value = false;
     },
     () => {
-      locateError.value = "Position refusée ou introuvable : saisis-la à la main.";
+      locateError.value =
+        "Position refusée ou introuvable : saisis-la à la main.";
       locating.value = false;
     },
     { enableHighAccuracy: true, timeout: 10000 },
@@ -68,7 +69,9 @@ const { start: startCooldown } = useTimeoutFn(
 
 async function onSubmit({ data }: FormSubmitEvent<DropState>) {
   if (data.lat === null || data.lng === null) {
-    form.value?.setErrors([{ name: "location", message: "Indique une position." }]);
+    form.value?.setErrors([
+      { name: "location", message: "Indique une position." },
+    ]);
     return;
   }
   pending.value = true;
@@ -86,7 +89,8 @@ async function onSubmit({ data }: FormSubmitEvent<DropState>) {
     });
   } catch (e) {
     const apiError = getApiError(e);
-    errorMessage.value = apiError?.message ?? "Enregistrement impossible, réessaie.";
+    errorMessage.value =
+      apiError?.message ?? "Enregistrement impossible, réessaie.";
     requestId.value = apiError?.requestId ?? "";
 
     if (apiError?.status === 422) {
@@ -143,7 +147,10 @@ async function onSubmit({ data }: FormSubmitEvent<DropState>) {
       name="location"
       label="Position"
       required
-      :help="locateError || 'À 3 km au plus du département MMI.'"
+      :help="
+        locateError ||
+        'À 3 km au plus du département MMI (zone entourée) : clique sur la carte ou fais glisser l’épingle.'
+      "
     >
       <div class="grid grid-cols-2 gap-3">
         <UFormField label="Latitude" size="sm">
@@ -176,6 +183,12 @@ async function onSubmit({ data }: FormSubmitEvent<DropState>) {
         class="mt-3"
         :loading="locating"
         @click="locate"
+      />
+      <!-- Mêmes valeurs que les champs : la carte, la saisie et la géolocalisation restent synchronisées -->
+      <DropLocationPicker
+        v-model:lat="state.lat"
+        v-model:lng="state.lng"
+        class="mt-3 h-72"
       />
     </UFormField>
 
