@@ -11,7 +11,7 @@ const MESSAGES: Record<
   RealtimeNotification["kind"],
   { action: string; icon: string }
 > = {
-  drop_liked: { action: "a aimé ton drop", icon: "i-lucide-heart" },
+  drop_liked: { action: "a aimé ton drop", icon: "i-lucide-thumbs-up" },
   drop_commented: {
     action: "a commenté ton drop",
     icon: "i-lucide-message-circle",

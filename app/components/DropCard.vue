@@ -88,10 +88,12 @@ const text = computed(() =>
 
       <div class="mt-3 flex items-center gap-6 text-sm text-muted">
         <!-- relative z-10 : passe au-dessus du lien qui couvre la carte, sinon le clic ouvrirait le drop -->
-        <DropLikeButton
-          :drop-id="drop.id"
+        <ReactionButtons
+          :target="{ kind: 'drop', id: drop.id }"
           :liked-by-me="drop.likedByMe"
+          :disliked-by-me="drop.dislikedByMe"
           :likes-count="drop.likesCount"
+          :dislikes-count="drop.dislikesCount"
           class="relative z-10 -ml-2.5"
         />
         <div class="flex items-center justify-center gap-1">

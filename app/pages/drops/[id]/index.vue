@@ -160,10 +160,12 @@ useSeoMeta({ title: () => drop.value?.title ?? "Drop" });
       <footer
         class="mt-6 flex items-center gap-6 border-y border-line py-3 text-sm text-muted"
       >
-        <DropLikeButton
-          :drop-id="drop.id"
+        <ReactionButtons
+          :target="{ kind: 'drop', id: drop.id }"
           :liked-by-me="drop.likedByMe"
+          :disliked-by-me="drop.dislikedByMe"
           :likes-count="drop.likesCount"
+          :dislikes-count="drop.dislikesCount"
           class="-ml-2.5"
         />
         <span class="flex items-center gap-1">
