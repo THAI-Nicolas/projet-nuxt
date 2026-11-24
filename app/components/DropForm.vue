@@ -10,9 +10,6 @@ const props = defineProps<{
   save: (body: DropBody) => Promise<unknown>;
 }>();
 
-// Département MMI (exemple de l'OpenAPI) : point de départ déjà dans la zone autorisée
-const MMI = { lat: 47.49561, lng: 6.80544 };
-
 type DropState = {
   title: string;
   content: string;

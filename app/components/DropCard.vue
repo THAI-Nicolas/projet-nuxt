@@ -3,7 +3,11 @@ import type { Drop } from "~/types/api";
 
 const props = defineProps<{
   drop: Drop;
+  // Mis en avant (épingle survolée ou cliquée sur la carte)
+  active?: boolean;
 }>();
+
+const emit = defineEmits<{ locate: [] }>();
 
 // Compteur local : la prop est en lecture seule, et le temps réel doit pouvoir la faire bouger
 const commentsCount = ref(props.drop.commentsCount);
@@ -27,6 +31,7 @@ useRealtimeEvent("comment:deleted", ({ dropId }) => {
   <!-- relative : le lien du titre s'étend sur toute la carte (after:inset-0) -->
   <article
     class="relative flex gap-3 border-b border-line p-4 transition-colors hover:bg-surface/50"
+    :class="{ 'bg-surface ring-1 ring-accent ring-inset': active }"
   >
     <UAvatar
       :alt="drop.author.displayName"
@@ -73,6 +78,15 @@ useRealtimeEvent("comment:deleted", ({ dropId }) => {
           <span>{{ commentsCount }}</span>
           <span class="sr-only">commentaires</span>
         </div>
+        <UButton
+          icon="i-lucide-map-pin"
+          color="neutral"
+          variant="ghost"
+          size="sm"
+          :aria-label="`Voir « ${drop.title} » sur la carte`"
+          class="relative z-10 ml-auto"
+          @click="emit('locate')"
+        />
       </div>
     </div>
   </article>
