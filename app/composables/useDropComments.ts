@@ -47,6 +47,8 @@ export function useDropComments(dropId: number, initialTotal: number) {
     parentId: ParentId,
     update: (items: DropComment[]) => DropComment[],
     delta = 0,
+    // Différent de delta pour une trace : elle reste dans la liste mais ne compte plus dans le total du drop
+    countDelta = delta,
   ) {
     const page = getList(parentId);
     if (!page) return;
@@ -55,8 +57,22 @@ export function useDropComments(dropId: number, initialTotal: number) {
       items: update(page.items),
       total: page.total + delta,
     });
-    if (delta) count(parentId, delta);
+    if (countDelta) count(parentId, countDelta);
   }
+
+  // Racine supprimée qui a des réponses : l'API la garde en « trace » pour ne pas orpheliner le fil
+  const toTrace = (comment: DropComment): DropComment => ({
+    ...comment,
+    deleted: true,
+    content: "",
+    isMine: false,
+    author: {
+      id: 0,
+      username: "deleted",
+      displayName: "Commentaire supprimé",
+      avatarUrl: null,
+    },
+  });
 
   // Liste qui contient ce commentaire (premier niveau ou fil chargé), undefined si aucune
   function findParent(commentId: number): ParentId | undefined {
@@ -189,25 +205,42 @@ export function useDropComments(dropId: number, initialTotal: number) {
 
   async function deleteComment(comment: DropComment) {
     const parentId = comment.parentId;
-    // Optimiste : retiré tout de suite, en gardant sa place pour pouvoir le remettre
+    const keepsTrace = parentId === null && comment.repliesCount > 0;
+    // Optimiste : retiré tout de suite (ou changé en trace), en gardant sa place pour pouvoir le remettre
     const index =
       getList(parentId)?.items.findIndex((c) => c.id === comment.id) ?? -1;
-    updateList(
-      parentId,
-      (items) => items.filter((c) => c.id !== comment.id),
-      -1,
-    );
+    if (keepsTrace)
+      updateList(
+        parentId,
+        (items) => items.map((c) => (c.id === comment.id ? toTrace(c) : c)),
+        0,
+        -1,
+      );
+    else
+      updateList(
+        parentId,
+        (items) => items.filter((c) => c.id !== comment.id),
+        -1,
+      );
 
     try {
       await api(`/comments/${comment.id}`, { method: "DELETE" });
     } catch (e) {
       const apiError = getApiError(e);
       if (apiError?.status === 404) return; // déjà supprimé : le retrait est juste
-      updateList(
-        parentId,
-        (items) => [...items.slice(0, index), comment, ...items.slice(index)],
-        1,
-      );
+      if (keepsTrace)
+        updateList(
+          parentId,
+          (items) => items.map((c) => (c.id === comment.id ? comment : c)),
+          0,
+          1,
+        );
+      else
+        updateList(
+          parentId,
+          (items) => [...items.slice(0, index), comment, ...items.slice(index)],
+          1,
+        );
       toast.add({
         title: "Impossible de supprimer ce commentaire",
         description: apiError?.message ?? "Vérifie ta connexion puis réessaie.",
@@ -231,8 +264,17 @@ export function useDropComments(dropId: number, initialTotal: number) {
   // Réactions changées (compteurs, et nos likedByMe / dislikedByMe : le message est construit pour nous)
   useRealtimeEvent("comment:updated", ({ comment }) => {
     if (comment.dropId !== dropId) return;
-    updateList(comment.parentId, (items) =>
-      items.map((c) => (c.id === comment.id ? comment : c)),
+    // Devenu une trace (supprimé par son auteur, ailleurs) : il ne compte plus dans le total.
+    // Déjà une trace chez nous (notre suppression optimiste) : déjà décompté.
+    const previous = getList(comment.parentId)?.items.find(
+      (c) => c.id === comment.id,
+    );
+    const becameTrace = comment.deleted && previous && !previous.deleted;
+    updateList(
+      comment.parentId,
+      (items) => items.map((c) => (c.id === comment.id ? comment : c)),
+      0,
+      becameTrace ? -1 : 0,
     );
   });
 
@@ -242,10 +284,14 @@ export function useDropComments(dropId: number, initialTotal: number) {
     if (id !== dropId) return;
     const parentId = findParent(commentId);
     if (parentId === undefined) return; // déjà retiré (le nôtre), ou pas chargé
+    // Une trace part avec sa dernière réponse : elle-même n'était plus comptée, mais les réponses
+    // qu'elle compte encore (fil pas chargé, leur suppression n'a pas pu être décomptée) le sont
+    const removed = getList(parentId)?.items.find((c) => c.id === commentId);
     updateList(
       parentId,
       (items) => items.filter((c) => c.id !== commentId),
       -1,
+      removed?.deleted ? -removed.repliesCount : -1,
     );
   });
 

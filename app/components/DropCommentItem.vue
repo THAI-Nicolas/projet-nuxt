@@ -12,7 +12,16 @@ const emit = defineEmits<{ reply: []; delete: [] }>();
 </script>
 
 <template>
+  <!-- Trace d'une racine supprimée qui a des réponses : ni auteur, ni texte, ni action (réagir donnerait 404) -->
+  <p
+    v-if="comment.deleted"
+    class="flex items-center gap-2 text-sm text-muted italic"
+  >
+    <UIcon name="i-lucide-message-square-off" class="size-4 shrink-0" />
+    Commentaire supprimé
+  </p>
   <div
+    v-else
     :aria-busy="pending"
     class="flex items-start gap-3 transition-opacity"
     :class="{ 'opacity-60': pending }"
