@@ -22,7 +22,10 @@ const year = new Date().getFullYear();
           <UUser
             :name="user.displayName"
             :description="`@${user.username}`"
-            :avatar="{ src: user.avatarUrl ?? undefined, alt: user.displayName }"
+            :avatar="{
+              src: user.avatarUrl ?? undefined,
+              alt: user.displayName,
+            }"
             to="/profile"
             :ui="{ wrapper: 'hidden sm:block' }"
           />
@@ -44,12 +47,10 @@ const year = new Date().getFullYear();
 
     <UFooter :ui="{ container: 'max-w-2xl' }">
       <template #left>
-        <p class="text-sm text-muted">
-          © {{ year }} Droppy · Un lieu. Une idée. Un drop.
-        </p>
+        <p class="text-sm text-muted">© {{ year }} Droppy</p>
       </template>
       <template #right>
-        <ULink to="/status" class="text-sm">Statut de l'API</ULink>
+        <ULink to="/status" class="text-sm">Voir la santé de l'API</ULink>
       </template>
     </UFooter>
   </div>

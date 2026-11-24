@@ -52,11 +52,19 @@ async function onSubmit({ data }: FormSubmitEvent<ProfileState>) {
   errorMessage.value = "";
   requestId.value = "";
   try {
-    user.value = await api<PrivateUser>("/auth/me", { method: "PATCH", body: changes });
-    toast.add({ title: "Profil mis à jour", icon: "i-lucide-check", color: "success" });
+    user.value = await api<PrivateUser>("/auth/me", {
+      method: "PATCH",
+      body: changes,
+    });
+    toast.add({
+      title: "Profil mis à jour",
+      icon: "i-lucide-check",
+      color: "success",
+    });
   } catch (e) {
     const apiError = getApiError(e);
-    errorMessage.value = apiError?.message ?? "Enregistrement impossible, réessaie.";
+    errorMessage.value =
+      apiError?.message ?? "Enregistrement impossible, réessaie.";
     requestId.value = apiError?.requestId ?? "";
 
     if (apiError?.status === 422) {
