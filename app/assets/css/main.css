@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @import "@nuxt/ui";
+@import "leaflet.markercluster/dist/MarkerCluster.css";
 
 @theme {
   /* Chargée automatiquement par @nuxt/fonts (inclus dans Nuxt UI) */
@@ -69,4 +70,17 @@
 .drop-pin circle {
   fill: #ffffff;
   stroke: none;
+}
+
+/* Bulle de regroupement (DropsCluster) : nombre de drops proches, se sépare en zoomant */
+/* .leaflet-marker-icon : passe devant le display: block de leaflet.css */
+.leaflet-marker-icon.drop-cluster {
+  display: grid;
+  place-items: center;
+  border-radius: 9999px;
+  background: var(--color-accent);
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 0.875rem;
+  box-shadow: 0 0 0 4px color-mix(in oklab, var(--color-accent) 35%, transparent);
 }

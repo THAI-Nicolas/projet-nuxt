@@ -69,6 +69,7 @@ useResizeObserver(root, () => {
 });
 
 // Appelé par la page (bouton « Voir sur la carte »), éventuellement juste après avoir affiché la carte
+// shortcut: une épingle dans une bulle (drops au même endroit) reste groupée au zoom 17, et le survol ne la met pas en avant ; passer par cluster.zoomToShowLayer si c'est gênant.
 function flyTo(id: number) {
   const drop = find(id);
   if (!drop || !map.value) return;
@@ -91,7 +92,7 @@ defineExpose({ flyTo });
       <LMap
         :zoom="14"
         :center="initialCenter"
-        :use-global-leaflet="false"
+        :use-global-leaflet="true"
         :options="{ scrollWheelZoom: interactive }"
         @ready="onReady"
       >
@@ -101,29 +102,34 @@ defineExpose({ flyTo });
           layer-type="base"
           name="OpenStreetMap"
         />
-        <LMarker
-          v-for="drop in drops"
-          :key="drop.id"
-          :lat-lng="latLng(drop)"
-          :z-index-offset="drop.id === activeId ? 1000 : 0"
-          @click="emit('select', drop.id)"
-        >
-          <!-- Épingle Lucide en SVG (remplie via .drop-pin dans main.css), pointe en bas au centre -->
-          <LIcon
-            class-name="drop-marker"
-            :icon-size="[36, 36]"
-            :icon-anchor="[18, 34]"
-            :tooltip-anchor="[0, -34]"
+        <!-- Épingles proches regroupées en bulle numérotée (DropsCluster, L global requis) -->
+        <DropsCluster>
+          <LMarker
+            v-for="drop in drops"
+            :key="drop.id"
+            :lat-lng="latLng(drop)"
+            :z-index-offset="drop.id === activeId ? 1000 : 0"
+            @click="emit('select', drop.id)"
           >
-            <UIcon
-              name="i-lucide-map-pin"
-              mode="svg"
-              class="drop-pin size-9 origin-bottom transition-transform"
-              :class="{ 'scale-125': drop.id === activeId }"
-            />
-          </LIcon>
-          <LTooltip :options="{ direction: 'top' }">{{ drop.title }}</LTooltip>
-        </LMarker>
+            <!-- Épingle Lucide en SVG (remplie via .drop-pin dans main.css), pointe en bas au centre -->
+            <LIcon
+              class-name="drop-marker"
+              :icon-size="[36, 36]"
+              :icon-anchor="[18, 34]"
+              :tooltip-anchor="[0, -34]"
+            >
+              <UIcon
+                name="i-lucide-map-pin"
+                mode="svg"
+                class="drop-pin size-9 origin-bottom transition-transform"
+                :class="{ 'scale-125': drop.id === activeId }"
+              />
+            </LIcon>
+            <LTooltip :options="{ direction: 'top' }">{{
+              drop.title
+            }}</LTooltip>
+          </LMarker>
+        </DropsCluster>
       </LMap>
     </ClientOnly>
   </div>
