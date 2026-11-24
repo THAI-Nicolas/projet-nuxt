@@ -1,8 +1,14 @@
 <script setup lang="ts">
 // Formulaire seul : la section fournit `save` (ajout optimiste), le formulaire affiche les erreurs
-const props = defineProps<{
-  save: (content: string) => Promise<unknown>;
-}>();
+const props = withDefaults(
+  defineProps<{
+    save: (content: string) => Promise<unknown>;
+    label?: string;
+    // Formulaire de réponse : bouton « Annuler » pour le refermer
+    cancel?: () => void;
+  }>(),
+  { label: "Ton commentaire", cancel: undefined },
+);
 
 const MAX_LENGTH = 500;
 
@@ -41,7 +47,9 @@ async function onSubmit() {
     form.value?.setErrors([
       {
         name: "content",
-        message: apiError?.requestId ? `${message} (réf. ${apiError.requestId})` : message,
+        message: apiError?.requestId
+          ? `${message} (réf. ${apiError.requestId})`
+          : message,
       },
     ]);
     if (apiError?.status === 429) {
@@ -60,7 +68,7 @@ async function onSubmit() {
   <UForm ref="form" :state="state" class="space-y-3" @submit="onSubmit">
     <UFormField
       name="content"
-      label="Ton commentaire"
+      :label="label"
       :help="`${state.content.length}/${MAX_LENGTH}`"
     >
       <UTextarea
@@ -71,7 +79,14 @@ async function onSubmit() {
         class="w-full"
       />
     </UFormField>
-    <div class="flex justify-end">
+    <div class="flex justify-end gap-2">
+      <UButton
+        v-if="cancel"
+        label="Annuler"
+        color="neutral"
+        variant="ghost"
+        @click="cancel"
+      />
       <UButton
         type="submit"
         icon="i-lucide-send"

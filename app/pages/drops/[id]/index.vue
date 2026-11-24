@@ -180,8 +180,10 @@ useSeoMeta({ title: () => drop.value?.title ?? "Drop" });
 
     <DropComments
       v-if="drop && !notFound"
+      :key="drop.id"
       v-model:total="commentsTotal"
       :drop-id="drop.id"
+      :comments-count="drop.commentsCount"
       class="mt-6"
     />
   </main>
