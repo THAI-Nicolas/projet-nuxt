@@ -97,6 +97,12 @@ useRealtimeEvent("comment:created", ({ comment }) => {
   updateItems((items) => [...items, comment], 1);
 });
 
+// Réactions changées (compteurs, et nos likedByMe / dislikedByMe : le message est construit pour nous)
+useRealtimeEvent("comment:updated", ({ comment }) => {
+  if (comment.dropId !== props.dropId) return;
+  updateItems((items) => items.map((c) => (c.id === comment.id ? comment : c)));
+});
+
 // shortcut: un commentaire supprimé qui n'est pas dans les pages chargées ne décrémente pas le total
 // (impossible de le distinguer de notre propre suppression optimiste, déjà comptée) ; un refresh le recale.
 useRealtimeEvent("comment:deleted", ({ dropId, commentId }) => {
@@ -230,6 +236,15 @@ async function loadMore() {
             <p class="mt-2 whitespace-pre-line break-words">
               {{ comment.content }}
             </p>
+            <ReactionButtons
+              :target="{ kind: 'comment', id: comment.id }"
+              :liked-by-me="comment.likedByMe"
+              :disliked-by-me="comment.dislikedByMe"
+              :likes-count="comment.likesCount"
+              :dislikes-count="comment.dislikesCount"
+              :disabled="isPending(comment)"
+              class="mt-1 -ml-2.5"
+            />
           </div>
           <!-- Réservé à l'auteur (l'API renverrait 403 sinon) ; pas pendant l'envoi : pas encore d'id réel -->
           <UButton
