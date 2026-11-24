@@ -1,7 +1,7 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   // Nuxt UI branche lui-même Tailwind v4 (@tailwindcss/vite)
-  modules: ["@vueuse/nuxt/module", "@nuxt/ui"],
+  modules: ["@vueuse/nuxt/module", "@nuxt/ui", "@nuxtjs/leaflet"],
   compatibilityDate: "2025-07-15",
   typescript: {
     typeCheck: true,

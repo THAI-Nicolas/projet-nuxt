@@ -1,6 +1,10 @@
 <script setup lang="ts">
 const { user, logout } = useAuth();
 const year = new Date().getFullYear();
+
+// Les pages avec carte (definePageMeta({ wide: true })) s'élargissent, les autres restent en colonne de lecture
+const route = useRoute();
+const width = computed(() => (route.meta.wide ? "max-w-7xl" : "max-w-2xl"));
 </script>
 
 <template>
@@ -8,7 +12,12 @@ const year = new Date().getFullYear();
     <!-- Notifications en toast sur toutes les pages, uniquement connecté -->
     <RealtimeNotifications v-if="user" />
 
-    <UHeader to="/drops" :toggle="false" :ui="{ container: 'max-w-2xl' }">
+    <!-- Opaque : par défaut Nuxt UI la rend semi-transparente et floutée, le contenu se verrait dessous au scroll -->
+    <UHeader
+      to="/drops"
+      :toggle="false"
+      :ui="{ root: 'bg-bg backdrop-blur-none', container: width }"
+    >
       <template #title>
         <span class="flex items-center gap-2 text-xl font-bold">
           <UIcon name="i-lucide-droplet" class="size-6 text-primary" />
@@ -41,11 +50,11 @@ const year = new Date().getFullYear();
     </UHeader>
 
     <!-- div et pas <UMain> : chaque page porte déjà son <main> -->
-    <div class="mx-auto w-full max-w-2xl flex-1">
+    <div class="mx-auto w-full flex-1" :class="width">
       <slot />
     </div>
 
-    <UFooter :ui="{ container: 'max-w-2xl' }">
+    <UFooter :ui="{ container: width }">
       <template #left>
         <p class="text-sm text-muted">© {{ year }} Droppy</p>
       </template>

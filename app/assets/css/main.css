@@ -12,6 +12,12 @@
   --color-muted: #8b98a5;
   --color-accent: #7b71ff;
   --color-danger: #f4212e;
+
+  /* Carte de /drops : collée 1rem sous le header (top-header), hauteur de l'écran moins le header et 2 marges (h-map) */
+  /* Filtres de /drops : collés juste sous la barre du site (top-appbar) */
+  --spacing-appbar: var(--ui-header-height);
+  --spacing-header: calc(var(--ui-header-height) + 1rem);
+  --spacing-map: calc(100dvh - var(--ui-header-height) - 2rem);
 }
 
 /* Thème sombre unique : remplace les valeurs claires de Nuxt UI.
@@ -45,4 +51,22 @@
   a {
     cursor: pointer;
   }
+}
+
+/* Fond de carte OSM clair, sans filtre : police du site pour l'attribution et les tooltips */
+.leaflet-container {
+  font-family: inherit;
+}
+
+/* Épingle des drops : le SVG Lucide est un contour (fill="none") qu'on remplit de la couleur accent,
+   sans bordure claire ; le rond central reste blanc, sans contour, pour garder la forme d'épingle. */
+.drop-pin {
+  color: var(--color-accent);
+}
+.drop-pin path {
+  fill: currentColor;
+}
+.drop-pin circle {
+  fill: #ffffff;
+  stroke: none;
 }
