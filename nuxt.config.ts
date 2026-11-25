@@ -7,6 +7,8 @@ export default defineNuxtConfig({
     typeCheck: true,
     strict: true,
   },
+  // Pas de page d'accueil : la racine mène à la liste des drops
+  routeRules: { "/": { redirect: "/drops" } },
   runtimeConfig: {
     apiUrl: "", // privé : NUXT_API_URL, lu uniquement dans server/
   },
