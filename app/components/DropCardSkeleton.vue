@@ -1,6 +1,4 @@
 <template>
-  <!-- Même structure que DropCard (avatar + lignes) : la liste ne saute pas à l'arrivée des données.
-       aria-hidden : USkeleton est un role="alert", chaque bloc serait annoncé ; la page annonce le chargement une seule fois -->
   <div aria-hidden="true" class="flex gap-3 border-b border-line p-4">
     <USkeleton class="size-10 shrink-0 rounded-full" />
     <div class="flex-1 space-y-2">

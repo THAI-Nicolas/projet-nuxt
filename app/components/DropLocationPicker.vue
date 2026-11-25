@@ -8,25 +8,23 @@ import type {
   Marker,
 } from "leaflet";
 
-// Choix de la position d'un drop : épingle déplaçable, synchronisée avec les champs latitude / longitude du formulaire
+
 const lat = defineModel<number | null>("lat", { required: true });
 const lng = defineModel<number | null>("lng", { required: true });
 
 const map = shallowRef<LeafletMap>();
 
-// Pas d'épingle tant qu'un des deux champs est vide
+
 const position = computed<LatLngTuple | undefined>(() =>
   lat.value !== null && lng.value !== null ? [lat.value, lng.value] : undefined,
 );
 
-// Valeur de départ seulement : ensuite la carte suit l'épingle (voir le watch).
-// [number, number] et pas LatLngTuple : la prop `center` de LMap est typée PointExpression
 const initialCenter: [number, number] = [
   lat.value ?? MMI.lat,
   lng.value ?? MMI.lng,
 ];
 
-// 6 décimales (~10 cm), comme l'affichage des champs
+
 const round = (n: number) => Math.round(n * 1e6) / 1e6;
 
 function place({ lat: newLat, lng: newLng }: LatLng) {
@@ -34,14 +32,14 @@ function place({ lat: newLat, lng: newLng }: LatLng) {
   lng.value = round(newLng);
 }
 
-// Saisie à la main ou « Utiliser ma position » : la carte suit l'épingle si elle sort de la vue
+
 watch(position, (p) => {
   if (p && map.value && !map.value.getBounds().contains(p)) map.value.panTo(p);
 });
 </script>
 
 <template>
-  <!-- isolate : les calques Leaflet (z-index 400 à 1000) restent sous les éléments de la page -->
+  
   <div
     role="region"
     aria-label="Choisir la position sur la carte"
@@ -70,7 +68,7 @@ watch(position, (p) => {
             (e: DragEndEvent) => place((e.target as Marker).getLatLng())
           "
         >
-          <!-- Même épingle que la carte des drops (.drop-pin dans main.css) -->
+          
           <LIcon
             class-name="drop-marker"
             :icon-size="[36, 36]"

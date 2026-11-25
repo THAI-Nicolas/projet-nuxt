@@ -8,7 +8,6 @@ const toast = useToast();
 
 type ProfileState = { displayName: string; bio: string; avatarUrl: string };
 
-// Page privée : le middleware garantit que `user` est rempli
 const state = reactive<ProfileState>({
   displayName: user.value?.displayName ?? "",
   bio: user.value?.bio ?? "",
@@ -20,7 +19,6 @@ const pending = ref(false);
 const errorMessage = ref("");
 const requestId = ref("");
 
-// 429 : bouton désactivé pendant Retry-After
 const rateLimited = ref(false);
 const retryMs = ref(0);
 const { start: startCooldown } = useTimeoutFn(
@@ -31,13 +29,11 @@ const { start: startCooldown } = useTimeoutFn(
 
 async function onSubmit({ data }: FormSubmitEvent<ProfileState>) {
   if (!user.value) return;
-  // Chaîne vide → null : l'API efface la bio / l'avatar
   const body = {
     displayName: data.displayName,
     bio: data.bio || null,
     avatarUrl: data.avatarUrl || null,
   };
-  // Seuls les champs modifiés partent (l'API exige au moins un champ)
   const changes = Object.fromEntries(
     Object.entries(body).filter(
       ([key, value]) => value !== user.value?.[key as keyof typeof body],

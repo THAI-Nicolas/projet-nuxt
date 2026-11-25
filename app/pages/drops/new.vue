@@ -4,12 +4,10 @@ import type { Category, Drop, DropBody } from "~/types/api";
 const api = useApi();
 const toast = useToast();
 
-// Même clé que la liste : déjà en cache si on arrive depuis /drops
 const { data: categories, refresh } = await useAsyncData("categories", () =>
   api<Category[]>("/categories"),
 );
 
-// Les erreurs remontent à DropForm, qui les affiche
 async function create(body: DropBody) {
   const drop = await api<Drop>("/drops", { method: "POST", body });
   toast.add({ title: "Drop déposé", icon: "i-lucide-check", color: "success" });

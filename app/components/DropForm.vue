@@ -2,7 +2,6 @@
 import type { FormSubmitEvent } from "@nuxt/ui";
 import type { Category, Drop, DropBody } from "~/types/api";
 
-// Le formulaire ne connaît pas l'API : la page fournit `save` (POST ou PATCH), le formulaire affiche ses erreurs
 const props = defineProps<{
   categories: Category[];
   initial?: Drop;
@@ -58,7 +57,6 @@ const pending = ref(false);
 const errorMessage = ref("");
 const requestId = ref("");
 
-// 429 : bouton désactivé pendant Retry-After
 const rateLimited = ref(false);
 const retryMs = ref(0);
 const { start: startCooldown } = useTimeoutFn(
@@ -78,7 +76,6 @@ async function onSubmit({ data }: FormSubmitEvent<DropState>) {
   errorMessage.value = "";
   requestId.value = "";
   try {
-    // Corps explicite : l'API refuse tout champ inconnu (422) et attend des nombres pour lat/lng
     await props.save({
       title: data.title,
       content: data.content,
@@ -94,7 +91,6 @@ async function onSubmit({ data }: FormSubmitEvent<DropState>) {
     requestId.value = apiError?.requestId ?? "";
 
     if (apiError?.status === 422) {
-      // Erreurs de coordonnées (type, bornes) rangées sous `location` par l'API
       form.value?.setErrors(
         Object.entries(apiError.fields ?? {}).map(([name, messages]) => ({
           name,
@@ -181,7 +177,6 @@ async function onSubmit({ data }: FormSubmitEvent<DropState>) {
         :loading="locating"
         @click="locate"
       />
-      <!-- Mêmes valeurs que les champs : la carte, la saisie et la géolocalisation restent synchronisées -->
       <DropLocationPicker
         v-model:lat="state.lat"
         v-model:lng="state.lng"

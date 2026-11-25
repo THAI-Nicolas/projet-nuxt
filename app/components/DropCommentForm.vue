@@ -1,10 +1,10 @@
 <script setup lang="ts">
-// Formulaire seul : la section fournit `save` (ajout optimiste), le formulaire affiche les erreurs
+
 const props = withDefaults(
   defineProps<{
     save: (content: string) => Promise<unknown>;
     label?: string;
-    // Formulaire de réponse : bouton « Annuler » pour le refermer
+    
     cancel?: () => void;
   }>(),
   { label: "Ton commentaire", cancel: undefined },
@@ -15,7 +15,7 @@ const MAX_LENGTH = 500;
 const state = reactive({ content: "" });
 const form = useTemplateRef("form");
 
-// 429 : bouton désactivé pendant Retry-After
+
 const isRateLimited = ref(false);
 const retryMs = ref(0);
 const { start: startCooldown } = useTimeoutFn(
@@ -31,13 +31,13 @@ const canSubmit = computed(
 async function onSubmit() {
   const content = state.content.trim();
   if (!content) return;
-  // Optimiste : le champ se vide tout de suite, le commentaire est déjà affiché par la section
+ 
   state.content = "";
   form.value?.clear();
   try {
     await props.save(content);
   } catch (e) {
-    // Refusé : le texte revient, rien n'est perdu
+    
     state.content = content;
     const apiError = getApiError(e);
     const message =

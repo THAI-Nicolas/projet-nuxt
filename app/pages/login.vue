@@ -5,7 +5,6 @@ definePageMeta({ public: true });
 
 const { login } = useAuth();
 
-// UAuthForm génère les champs (label relié, œil sur le mot de passe) depuis ce tableau
 const fields: AuthFormField[] = [
   {
     name: "login",
@@ -35,7 +34,6 @@ async function onSubmit(
     await login(event.data.login, event.data.password);
     await navigateTo("/drops");
   } catch (e) {
-    // 401 invalid_credentials : message dans le formulaire, pas de déconnexion
     errorMessage.value =
       getApiError(e)?.message ?? "Connexion impossible, réessaie.";
   } finally {

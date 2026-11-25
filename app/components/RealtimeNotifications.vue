@@ -1,10 +1,6 @@
 <script setup lang="ts">
 import type { RealtimeNotification } from "~/types/realtime";
 
-// Sans affichage : transforme chaque message `notification` en toast.
-// Monté dans le layout (v-if user) pour être actif sur toutes les pages, et seulement connecté.
-// Le serveur n'envoie qu'à l'auteur du drop, jamais pour ses propres actions : aucun filtre à faire.
-
 const toast = useToast();
 
 const MESSAGES: Record<

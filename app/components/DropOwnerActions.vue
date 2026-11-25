@@ -1,5 +1,4 @@
 <script setup lang="ts">
-// À n'afficher que si drop.isMine : le parent fait le v-if, l'API refuse de toute façon (403)
 const props = defineProps<{
   dropId: number;
   title: string;
@@ -21,7 +20,6 @@ function openModal() {
 async function leave(title: string) {
   open.value = false;
   toast.add({ title, icon: "i-lucide-trash-2", color: "success" });
-  // La liste se recharge à l'arrivée sur /drops : pas de cache à vider à la main
   await navigateTo("/drops");
 }
 
@@ -33,9 +31,10 @@ async function remove() {
     await leave("Drop supprimé");
   } catch (e) {
     const apiError = getApiError(e);
-    // 404 : déjà supprimé (autre onglet) → même issue qu'une suppression réussie
-    if (apiError?.status === 404) return await leave("Ce drop était déjà supprimé");
-    errorMessage.value = apiError?.message ?? "Suppression impossible, réessaie.";
+    if (apiError?.status === 404)
+      return await leave("Ce drop était déjà supprimé");
+    errorMessage.value =
+      apiError?.message ?? "Suppression impossible, réessaie.";
     requestId.value = apiError?.requestId ?? "";
   } finally {
     deleting.value = false;

@@ -51,7 +51,6 @@ async function onSubmit(event: FormSubmitEvent<RegisterData>) {
   pending.value = true;
   errorMessage.value = "";
   try {
-    // Corps explicite : l'API refuse tout champ inconnu (422)
     const { username, displayName, email, password } = event.data;
     await register({ username, displayName, email, password });
     await navigateTo("/drops");
@@ -59,9 +58,7 @@ async function onSubmit(event: FormSubmitEvent<RegisterData>) {
     const apiError = getApiError(e);
     const fieldErrors = Object.entries(apiError?.fields ?? {});
     if (apiError?.status === 422 && fieldErrors.length) {
-      // Message global aussi : un champ absent du formulaire (ex. bio) ne s'afficherait nulle part
       errorMessage.value = apiError.message;
-      // 422 : chaque message s'affiche sous son champ
       authForm.value?.formRef?.setErrors(
         fieldErrors.map(([name, messages]) => ({
           name,
@@ -69,7 +66,6 @@ async function onSubmit(event: FormSubmitEvent<RegisterData>) {
         })),
       );
     } else {
-      // 409 (pseudo ou e-mail déjà pris) et le reste : message global
       errorMessage.value =
         apiError?.message ?? "Inscription impossible, réessaie.";
     }

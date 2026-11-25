@@ -3,22 +3,17 @@ import type { Drop } from "~/types/api";
 
 const props = defineProps<{
   drop: Drop;
-  // Mis en avant (épingle survolée ou cliquée sur la carte)
   active?: boolean;
 }>();
 
 const emit = defineEmits<{ locate: [] }>();
 
-// Compteur local : la prop est en lecture seule, et le temps réel doit pouvoir la faire bouger
 const commentsCount = ref(props.drop.commentsCount);
-// La liste a été rechargée (filtre, refresh) : l'API fait foi
 watch(
   () => props.drop.commentsCount,
   (count) => (commentsCount.value = count),
 );
 
-// En direct. Pas de doublon possible ici : on ne commente pas depuis la liste
-// (en revenant du détail, la liste est rechargée depuis l'API).
 useRealtimeEvent("comment:created", ({ comment }) => {
   if (comment.dropId === props.drop.id) commentsCount.value += 1;
 });
@@ -26,7 +21,6 @@ useRealtimeEvent("comment:deleted", ({ dropId }) => {
   if (dropId === props.drop.id) commentsCount.value -= 1;
 });
 
-// Texte long coupé dans la liste, déplié sur place par « Lire la suite » (le détail affiche toujours tout)
 const MAX_CHARS = 280;
 const expanded = ref(false);
 const content = computed(() => props.drop.content ?? "");
@@ -39,7 +33,6 @@ const text = computed(() =>
 </script>
 
 <template>
-  <!-- relative : le lien du titre s'étend sur toute la carte (after:inset-0) -->
   <article
     class="relative flex gap-3 border-b border-line p-4 transition-colors hover:bg-surface/50"
     :class="{ 'bg-surface ring-1 ring-accent ring-inset': active }"
@@ -73,7 +66,6 @@ const text = computed(() =>
         </NuxtLink>
       </h2>
       <p v-if="drop.content" class="mt-1 whitespace-pre-line">{{ text }}</p>
-      <!-- relative z-10 : au-dessus du lien qui couvre la carte, sinon le clic ouvrirait le drop -->
       <UButton
         v-if="long"
         :label="expanded ? 'Réduire' : 'Lire la suite'"
@@ -93,7 +85,6 @@ const text = computed(() =>
       />
 
       <div class="mt-3 flex items-center gap-6 text-sm text-muted">
-        <!-- relative z-10 : passe au-dessus du lien qui couvre la carte, sinon le clic ouvrirait le drop -->
         <ReactionButtons
           :target="{ kind: 'drop', id: drop.id }"
           :liked-by-me="drop.likedByMe"

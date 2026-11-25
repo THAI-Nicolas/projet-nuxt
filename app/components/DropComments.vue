@@ -3,11 +3,11 @@ import type { DropComment } from "~/types/api";
 
 const props = defineProps<{
   dropId: number;
-  // Drop.commentsCount : racines et réponses (le total de la liste ne compte que les racines)
+  
   commentsCount: number;
 }>();
 
-// Remonte le total au parent (compteur du footer) : il ne peut pas muter drop.commentsCount (shallowRef)
+
 const totalModel = defineModel<number>("total");
 
 const {
@@ -35,7 +35,7 @@ watch(total, (value) => (totalModel.value = value), { immediate: true });
 const repliesLabel = (count: number) =>
   `${count} réponse${count > 1 ? "s" : ""}`;
 
-// Une seule modale de confirmation pour tous les commentaires et réponses
+
 const commentToDelete = ref<DropComment>();
 const isDeleteModalOpen = computed({
   get: () => commentToDelete.value !== undefined,
@@ -85,7 +85,7 @@ function confirmDelete() {
             @delete="commentToDelete = comment"
           />
 
-          <!-- Fil de réponses (un seul niveau), replié par défaut -->
+          
           <div
             v-if="comment.repliesCount > 0 || replyTo === comment.id"
             class="mt-2 ml-4 space-y-2 border-l border-line pl-4"

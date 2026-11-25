@@ -11,7 +11,6 @@ const toast = useToast();
 const id = computed(() => String(route.params.id));
 const dropPath = computed(() => `/drops/${id.value}`);
 
-// Même clé que la page détail : cache partagé dans les deux sens
 const { data: drop, error } = await useAsyncData(
   () => `drop-${id.value}`,
   () => api<Drop>(dropPath.value),
@@ -21,7 +20,6 @@ const { data: categories } = await useAsyncData("categories", () =>
   api<Category[]>("/categories"),
 );
 
-// Les erreurs remontent à DropForm, qui les affiche
 async function update(body: DropBody) {
   if (!drop.value) return;
   const { title, content, category, imageUrl, location } = drop.value;
@@ -33,7 +31,7 @@ async function update(body: DropBody) {
     lat: location.lat,
     lng: location.lng,
   };
-  // Seuls les champs modifiés partent : ne renvoie pas une position non touchée (précision approx)
+  
   const changes = Object.fromEntries(
     Object.entries(body).filter(
       ([key, value]) => value !== original[key as keyof DropBody],
@@ -81,7 +79,7 @@ useSeoMeta({ title: () => `Modifier ${drop.value?.title ?? "le drop"}` });
       :actions="[{ label: 'Réessayer', icon: 'i-lucide-refresh-cw', onClick: () => refreshNuxtData() }]"
       class="mt-6"
     />
-    <!-- Garde d'interface (URL tapée à la main) : l'API renverrait de toute façon 403 -->
+    
     <UEmpty
       v-else-if="drop && !drop.isMine"
       role="alert"

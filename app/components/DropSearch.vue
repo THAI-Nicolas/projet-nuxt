@@ -1,5 +1,4 @@
 <script setup lang="ts">
-// Le parent indique s'il charge : le composant ne connaît toujours pas l'API
 defineProps<{ loading?: boolean }>();
 
 const search = defineModel<string>({ required: true });

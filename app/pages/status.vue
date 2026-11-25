@@ -4,12 +4,11 @@ import type { Health } from "~/types/api";
 definePageMeta({ public: true });
 
 const api = useApi();
-// useAsyncData : charge les données côté serveur ET client, et expose l'état de la requête
 const { data, error, status, refresh } = await useAsyncData("health", () =>
   api<Health>("/health"),
 );
 
-// Temps réel : la page prend la connexion le temps d'être affichée (le ticket exige d'être connecté)
+
 const user = useUser();
 const realtime = useRealtimeStatus();
 const realtimeLabel = computed(() => {

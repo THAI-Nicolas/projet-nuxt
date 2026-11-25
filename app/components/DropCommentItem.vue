@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import type { DropComment } from "~/types/api";
 
-// Un commentaire ou une réponse : la liste gère l'état, ce composant n'affiche que lui
+
 defineProps<{
   comment: DropComment;
-  // En cours d'envoi : pas encore d'id réel, donc ni réaction, ni réponse, ni suppression
+  
   pending?: boolean;
 }>();
 
@@ -12,7 +12,7 @@ const emit = defineEmits<{ reply: []; delete: [] }>();
 </script>
 
 <template>
-  <!-- Trace d'une racine supprimée qui a des réponses : ni auteur, ni texte, ni action (réagir donnerait 404) -->
+  
   <p
     v-if="comment.deleted"
     class="flex items-center gap-2 text-sm text-muted italic"
@@ -71,7 +71,7 @@ const emit = defineEmits<{ reply: []; delete: [] }>();
         />
       </div>
     </div>
-    <!-- Réservé à l'auteur (l'API renverrait 403 sinon) -->
+    
     <UButton
       v-if="comment.isMine && !pending"
       icon="i-lucide-trash-2"

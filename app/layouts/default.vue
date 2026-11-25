@@ -2,17 +2,14 @@
 const { user, logout } = useAuth();
 const year = new Date().getFullYear();
 
-// Les pages avec carte (definePageMeta({ wide: true })) s'élargissent, les autres restent en colonne de lecture
 const route = useRoute();
 const width = computed(() => (route.meta.wide ? "max-w-7xl" : "max-w-2xl"));
 </script>
 
 <template>
   <div class="flex min-h-dvh flex-col">
-    <!-- Notifications en toast sur toutes les pages, uniquement connecté -->
     <RealtimeNotifications v-if="user" />
 
-    <!-- Opaque : par défaut Nuxt UI la rend semi-transparente et floutée, le contenu se verrait dessous au scroll -->
     <UHeader
       to="/drops"
       :toggle="false"
@@ -49,7 +46,6 @@ const width = computed(() => (route.meta.wide ? "max-w-7xl" : "max-w-2xl"));
       </template>
     </UHeader>
 
-    <!-- div et pas <UMain> : chaque page porte déjà son <main> -->
     <div class="mx-auto w-full flex-1" :class="width">
       <slot />
     </div>

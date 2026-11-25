@@ -2,7 +2,6 @@
 import type { Category } from "~/types/api";
 
 defineProps<{ categories: Category[] }>();
-// undefined = toutes les catégories. Le composant ne connaît ni l'URL ni l'API.
 const selected = defineModel<Category["id"] | undefined>();
 </script>
 

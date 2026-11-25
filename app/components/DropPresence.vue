@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { PublicUser } from "~/types/api";
 
-// Affichage seul : la page appelle usePresence() une fois et passe la liste ici
+
 const props = defineProps<{ viewers: readonly PublicUser[] }>();
 
 const label = computed(() => {
@@ -13,7 +13,7 @@ const label = computed(() => {
 </script>
 
 <template>
-  <!-- Rien avant la première réponse du serveur (rendu serveur, connexion en cours) -->
+
   <p v-if="viewers.length" class="flex items-center gap-2 text-sm text-muted">
     <UAvatarGroup :max="3" size="xs" aria-hidden="true">
       <UAvatar

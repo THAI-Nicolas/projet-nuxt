@@ -1,23 +1,18 @@
 <script setup lang="ts">
 import type { PublicUser } from "~/types/api";
 
-// Qui est en ligne (soi-même inclus, dédoublonné par utilisateur côté serveur).
-// Monté dans l'en-tête (v-if user) : réutilise la connexion que le layout garde ouverte.
-
 const online = ref<PublicUser[]>([]);
 const status = useRealtimeStatus();
 const me = useUser();
 
-// Liste de départ à chaque ouverture, reconnexions comprises (un nouveau hello à chaque fois)
 useRealtimeEvent("hello", (data) => (online.value = data.online));
-// Ensuite, chaque presence:online remplace toute la liste
+
 useRealtimeEvent("presence:online", ({ users }) => (online.value = users));
 
 const label = computed(() => `${online.value.length} en ligne`);
 </script>
 
 <template>
-  <!-- Socket fermée : la liste n'est plus à jour, on ne l'affiche pas -->
   <UPopover v-if="status.state === 'open' && online.length">
     <UButton
       color="neutral"
@@ -38,9 +33,14 @@ const label = computed(() => `${online.value.length} en ligne`);
             <UUser
               :name="user.displayName"
               :description="
-                user.id === me?.id ? `@${user.username} · toi` : `@${user.username}`
+                user.id === me?.id
+                  ? `@${user.username} · toi`
+                  : `@${user.username}`
               "
-              :avatar="{ src: user.avatarUrl ?? undefined, alt: user.displayName }"
+              :avatar="{
+                src: user.avatarUrl ?? undefined,
+                alt: user.displayName,
+              }"
               :to="`/users/${user.username}`"
               size="sm"
             />

@@ -2,8 +2,6 @@
 import { InjectionKeys } from "@vue-leaflet/vue-leaflet";
 import type { MarkerCluster, MarkerClusterGroup } from "leaflet";
 
-// Regroupe les LMarker enfants (plugin leaflet.markercluster), sur le modèle de LLayerGroup de vue-leaflet :
-// les marqueurs s'ajoutent au groupe au lieu de la carte. À utiliser dans un LMap en use-global-leaflet.
 const addToMap = inject(InjectionKeys.AddLayerInjection);
 const removeFromMap = inject(InjectionKeys.RemoveLayerInjection);
 
@@ -17,13 +15,11 @@ provide(InjectionKeys.RemoveLayerInjection, (layer) =>
 );
 
 onMounted(async () => {
-  // Le plugin étend le L global, posé par LMap (use-global-leaflet)
   await import("leaflet.markercluster");
   const L = (globalThis as unknown as { L: typeof import("leaflet") }).L;
   cluster.value = L.markerClusterGroup({
     showCoverageOnHover: false,
     maxClusterRadius: 40,
-    // Seul un nombre est injecté dans le HTML, jamais de contenu utilisateur
     iconCreateFunction: (group: MarkerCluster) =>
       L.divIcon({
         className: "drop-cluster",

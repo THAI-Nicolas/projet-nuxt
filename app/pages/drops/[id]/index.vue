@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import type { Category, Drop } from "~/types/api";
 
-// Id non numérique (/drops/abc) → 404 Nuxt directement, sans appeler l'API
 definePageMeta({
   validate: (route) => /^\d+$/.test(String(route.params.id)),
 });
@@ -10,7 +9,6 @@ const route = useRoute();
 const api = useApi();
 const id = computed(() => String(route.params.id));
 
-// Clé réactive : un cache par drop
 const {
   data: drop,
   error,
@@ -20,7 +18,6 @@ const {
   () => api<Drop>(`/drops/${id.value}`),
 );
 
-// Même clé que la liste : déjà en cache si on arrive depuis /drops
 const { data: categories } = await useAsyncData("categories", () =>
   api<Category[]>("/categories"),
 );
@@ -28,23 +25,22 @@ const categoryLabel = computed(
   () => categories.value?.find((c) => c.id === drop.value?.category)?.label,
 );
 
-// Tenu à jour par DropComments (ajouts/suppressions optimistes)
 const commentsTotal = ref<number>();
 
-// Présence en direct : un seul usePresence par page (voir le composable)
+
 const viewers = usePresence(() => Number(id.value));
 
-// En direct : le drop affiché est modifié (par son auteur, ailleurs) ou supprimé / masqué
+
 useRealtimeEvent("drop:updated", ({ drop: updated }) => {
   if (updated.id === drop.value?.id) drop.value = updated;
 });
-// L'id supprimé plutôt qu'un booléen : rien à remettre à zéro si on passe à un autre drop
+
 const deletedId = ref<number>();
 useRealtimeEvent("drop:deleted", ({ dropId }) => {
   deletedId.value = dropId;
 });
 
-// 404 : drop inexistant, ou masqué pour quelqu'un d'autre que son auteur (au chargement ou en direct)
+
 const notFound = computed(
   () =>
     error.value?.status === 404 ||
@@ -111,7 +107,7 @@ useSeoMeta({ title: () => drop.value?.title ?? "Drop" });
               />
             </template>
           </UUser>
-          <!-- Actions réservées à l'auteur : rien n'est rendu sur le drop de quelqu'un d'autre -->
+          
           <DropOwnerActions
             v-if="drop.isMine"
             :drop-id="drop.id"
@@ -153,7 +149,7 @@ useSeoMeta({ title: () => drop.value?.title ?? "Drop" });
         <UIcon name="i-lucide-map-pin" class="size-4 shrink-0" />
         {{ drop.location.lat.toFixed(4) }}, {{ drop.location.lng.toFixed(4) }}
       </p>
-      <!-- Même carte que la liste, avec la seule épingle du drop ; la molette fait défiler la page -->
+
       <DropsMap
         :drops="[drop]"
         :active-id="drop.id"
