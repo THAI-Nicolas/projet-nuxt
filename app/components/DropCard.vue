@@ -44,12 +44,18 @@ const text = computed(() =>
     class="relative flex gap-3 border-b border-line p-4 transition-colors hover:bg-surface/50"
     :class="{ 'bg-surface ring-1 ring-accent ring-inset': active }"
   >
-    <UAvatar
-      :alt="drop.author.displayName"
-      size="xl"
-      aria-hidden="true"
-      class="shrink-0"
-    />
+    <NuxtLink
+      :to="`/users/${drop.author.username}`"
+      :aria-label="`Profil de ${drop.author.displayName}`"
+      class="relative z-10 shrink-0 self-start rounded-full"
+    >
+      <UAvatar
+        :src="drop.author.avatarUrl ?? undefined"
+        :alt="drop.author.displayName"
+        size="xl"
+        aria-hidden="true"
+      />
+    </NuxtLink>
 
     <div class="min-w-0 flex-1">
       <p class="text-sm">
