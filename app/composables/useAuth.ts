@@ -5,14 +5,12 @@ export function useAuth() {
   const user = useUser();
 
   async function login(login: string, password: string) {
-    // Le serveur Nuxt pose le cookie httpOnly et ne nous renvoie que l'utilisateur
     user.value = await api<PrivateUser>("/auth/login", {
       method: "POST",
       body: { login, password },
     });
   }
-
-  // Même relais serveur que le login : cookie httpOnly posé, seul l'utilisateur revient
+  
   async function register(body: {
     username: string;
     email: string;

@@ -8,11 +8,11 @@ export function setAuthCookie(
   expiresAt: string,
 ) {
   setCookie(event, SESSION_COOKIE, token, {
-    httpOnly: true, // illisible par le JavaScript du navigateur : une faille XSS ne peut pas voler le token
+    httpOnly: true,
     secure: !import.meta.dev,
     sameSite: "lax",
     path: "/",
-    expires: new Date(expiresAt), // le cookie meurt en même temps que le token
+    expires: new Date(expiresAt), 
   });
 }
 
