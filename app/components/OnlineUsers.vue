@@ -41,6 +41,7 @@ const label = computed(() => `${online.value.length} en ligne`);
                 user.id === me?.id ? `@${user.username} · toi` : `@${user.username}`
               "
               :avatar="{ src: user.avatarUrl ?? undefined, alt: user.displayName }"
+              :to="`/users/${user.username}`"
               size="sm"
             />
           </li>

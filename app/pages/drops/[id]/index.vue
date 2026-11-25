@@ -94,7 +94,11 @@ useSeoMeta({ title: () => drop.value?.title ?? "Drop" });
         <div class="flex flex-wrap items-start justify-between gap-3">
           <UUser
             :name="drop.author.displayName"
-            :avatar="{ alt: drop.author.displayName }"
+            :avatar="{
+              src: drop.author.avatarUrl ?? undefined,
+              alt: drop.author.displayName,
+            }"
+            :to="`/users/${drop.author.username}`"
             size="lg"
           >
             <template #description>

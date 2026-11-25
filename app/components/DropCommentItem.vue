@@ -29,7 +29,11 @@ const emit = defineEmits<{ reply: []; delete: [] }>();
     <div class="min-w-0 flex-1">
       <UUser
         :name="comment.author.displayName"
-        :avatar="{ alt: comment.author.displayName }"
+        :avatar="{
+          src: comment.author.avatarUrl ?? undefined,
+          alt: comment.author.displayName,
+        }"
+        :to="`/users/${comment.author.username}`"
         size="sm"
       >
         <template #description>
